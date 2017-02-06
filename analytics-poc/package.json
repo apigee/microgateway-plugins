@@ -1,0 +1,15 @@
+{
+  "name": "new-analytics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "shawnfeldman",
+  "license": "MIT",
+  "dependencies": {
+    "request": "^2.79.0",
+    "volos-analytics-common": "^0.2.4"
+  }
+}
