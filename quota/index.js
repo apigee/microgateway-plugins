@@ -13,8 +13,12 @@ module.exports.init = function(config, logger, stats) {
            return req.token.application_name; 
     }
   };
-
+  
   Object.keys(config).forEach(function(productName) {
+    //The config object also contains the key and secret.
+    if(productName == 'key' || productName == 'secret') {
+      return; 
+    }
     var product = config[productName];
     if (!product.uri && !product.key && !product.secret && !product.allow && !product.interval) {
       // skip non-quota config
