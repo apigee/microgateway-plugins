@@ -218,7 +218,7 @@ const checkIfAuthorized = module.exports.checkIfAuthorized = function checkIfAut
   //
   debug('product only: '+ productOnly);
   //
-  
+
   if (!decodedToken.api_product_list) { debug('no api product list'); return false; }
 
   return decodedToken.api_product_list.some(function (product) {
@@ -290,6 +290,7 @@ function sendError(req, res, next, logger, stats, code, message) {
     case 'invalid_token':
     case 'missing_authorization':
     case 'invalid_authorization':
+    case 'invalid_auth':
       res.statusCode = 401;
       break;
     case 'gateway_timeout':
