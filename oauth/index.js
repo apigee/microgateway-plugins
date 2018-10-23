@@ -212,7 +212,7 @@ module.exports.init = function(config, logger, stats) {
                     debug('token not found in cache');
                     if (keys) {
                         debug('using jwk');
-                        var pem = getPEM(decodedToken, keys);
+                        var pem = getPEM(decodedToken.headerObj.kid, keys);
                         isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
                     } else {
                         debug('validating jwt');
@@ -243,7 +243,7 @@ module.exports.init = function(config, logger, stats) {
         } else {
             if (keys) {
                 debug('using jwk');
-                var pem = getPEM(decodedToken, keys);
+                var pem = getPEM(decodedToken.headerObj.kid, keys);
                 isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
             } else {
                 debug('validating jwt');
@@ -376,15 +376,22 @@ const checkIfAuthorized = module.exports.checkIfAuthorized = function checkIfAut
     });
 }
 
-function getPEM(decodedToken, keys) {
-    var i = 0;
-    debug('jwk kid ' + decodedToken.headerObj.kid);
-    for (; i < keys.length; i++) {
-        if (keys.kid == decodedToken.headerObj.kid) {
-            break;
+function getPEM(kid, publickeys) {
+    debug('jwk kid ' + kid);
+    var jwk = null;
+    if (publickeys.keys && publickeys.keys.constructor == Array) {
+        for (var i = 0; i < publickeys.keys.length; i++) {
+            if (publickeys.keys[i].kid == kid) {
+                jwk = publickeys.keys[i];
+            }
         }
+    } else if (publickeys[kid]) { //handle cases like https://www.googleapis.com/oauth2/v1/certs
+        jwk = publickeys[kid];
+    } else { //if the publickeys url does not return arrays, then use the only public key
+        debug("returning default public key");
+        jwk = publickeys;
     }
-    var publickey = rs.KEYUTIL.getKey(keys.keys[i]);
+    var publickey = rs.KEYUTIL.getKey(jwk);
     return rs.KEYUTIL.getPEM(publickey);
 }
 
