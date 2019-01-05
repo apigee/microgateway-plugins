@@ -28,7 +28,8 @@ map.setup({
     purgeInterval: 10000
 });
 
-var tokenCacheSize = 100;
+var tokenCacheSize = 100; //default cache size for access tokens
+var tokenCacheTTL = 60000; //set default token cache TTL to 1 minute 
 
 module.exports.init = function(config, logger, stats) {
 
@@ -50,6 +51,8 @@ module.exports.init = function(config, logger, stats) {
         }        
         //token cache settings
         tokenCache = config.hasOwnProperty('tokenCache') ? config.tokenCache : false;
+        //token cache ttl
+        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : 60000;
         //max number of tokens in the cache
         tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : 100;
         //
@@ -129,8 +132,8 @@ module.exports.init = function(config, logger, stats) {
                 } else {
                     if (tokenvalue == null || tokenvalue == undefined) {
                         map.size(function(err, sizevalue) {
-                            if (!err && sizevalue != null && sizevalue < 100) {
-                                map.store(oauthtoken, oauthtoken);
+                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
+                                map.store(oauthtoken, oauthtoken, tokenCacheTTL);
                             } else {
                                 debug('too many tokens in cache; ignore storing token');
                             }

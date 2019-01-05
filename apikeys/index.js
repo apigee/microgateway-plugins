@@ -22,6 +22,8 @@ acceptField.alg = acceptAlg;
 
 var productOnly;
 var cacheKey = false;
+var cacheKeyTTL = 60000; //set default cache TTL to 1 minute
+var cacheSize = 100; //default cache size 
 
 module.exports.init = function(config, logger, stats) {
 
@@ -35,6 +37,10 @@ module.exports.init = function(config, logger, stats) {
 		var keepApiKey = config.hasOwnProperty('keep-api-key') ? config['keep-api-key'] : false;
 		//cache api keys
         cacheKey = config.hasOwnProperty("cacheKey") ? config.cacheKey : false;
+        //cache ttl
+        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : 60000;
+        //cache size
+        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : 100;
         //set grace period
         var gracePeriod = config.hasOwnProperty("gracePeriod") ? config.gracePeriod : 0;
         acceptField.gracePeriod = gracePeriod;
@@ -198,8 +204,13 @@ module.exports.init = function(config, logger, stats) {
                     // default to now (in seconds) + 30m if not set
                     decodedToken.exp = decodedToken.exp || +(((Date.now() / 1000) + 1800).toFixed(0));
                     //apiKeyCache[apiKey] = decodedToken;
-                    cache.store(apiKey, decodedToken);
-                    debug("api key cache store", apiKey);
+                    cache.size(function(err, sizevalue) {
+                        if (!err && sizevalue != null && sizevalue < cacheSize) {
+                            cache.store(apiKey, decodedToken, cacheKeyTTL);
+                        } else {
+                            debug('too many keys in cache; ignore storing token');
+                        }
+                    });
                 } else {
                     debug("api key cache skip", apiKey);
                 }
