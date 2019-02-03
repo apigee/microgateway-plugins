@@ -181,7 +181,7 @@ module.exports.init = function(config, logger, stats) {
         if (checkIfAuthorized(config, req.reqUrl.path, res.proxy, decodedToken)) {
             req.token = decodedToken;
             var authClaims = _.omit(decodedToken, PRIVATE_JWT_VALUES);
-            req.headers['x-authorization-claims'] = new Buffer(JSON.stringify(authClaims)).toString('base64');
+            req.headers['x-authorization-claims'] = Buffer.from(JSON.stringify(authClaims)).toString('base64');
             next();
         } else {
             return sendError(req, res, next, logger, stats, 'access_denied');

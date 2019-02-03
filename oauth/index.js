@@ -290,7 +290,7 @@ module.exports.init = function(config, logger, stats) {
             req.token = decodedToken;
 
             var authClaims = _.omit(decodedToken, PRIVATE_JWT_VALUES);
-            req.headers['x-authorization-claims'] = new Buffer(JSON.stringify(authClaims)).toString('base64');
+            req.headers['x-authorization-claims'] = Buffer.from(JSON.stringify(authClaims)).toString('base64');
 
             if (apiKey) {
                 var cacheControl = req.headers['cache-control'];
