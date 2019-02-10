@@ -52,9 +52,9 @@ module.exports.init = function(config, logger, stats) {
         //token cache settings
         tokenCache = config.hasOwnProperty('tokenCache') ? config.tokenCache : false;
         //token cache ttl
-        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : 60000;
+        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : tokenCacheTTL;
         //max number of tokens in the cache
-        tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : 100;
+        tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : tokenCacheSize;
         //
         if (!req.headers[authHeaderName]) {
             if (config.allowNoAuthorization) {

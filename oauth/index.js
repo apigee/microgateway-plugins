@@ -47,9 +47,9 @@ module.exports.init = function(config, logger, stats) {
         var keepAuthHeader = config.hasOwnProperty('keep-authorization-header') ? config['keep-authorization-header'] : false;
         cacheKey = config.hasOwnProperty('cacheKey') ? config.cacheKey : false;
         //cache ttl
-        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : 60000;
+        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : cacheKeyTTL;
         //cache size
-        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : 100;
+        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : cacheSize;
         //set grace period
         var gracePeriod = config.hasOwnProperty('gracePeriod') ? config.gracePeriod : 0;
         acceptField.gracePeriod = gracePeriod;
@@ -67,9 +67,9 @@ module.exports.init = function(config, logger, stats) {
         //token cache settings
         tokenCache = config.hasOwnProperty('tokenCache') ? config.tokenCache : false;
         //token cache ttl
-        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : 60000;
+        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.tokenCacheTTL : tokenCacheTTL;
         //max number of tokens in the cache
-        tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : 100;
+        tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : tokenCacheSize;
         //
         //support for enabling oauth or api key only
         if (oauth_only) {

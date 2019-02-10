@@ -38,9 +38,9 @@ module.exports.init = function(config, logger, stats) {
 		//cache api keys
         cacheKey = config.hasOwnProperty("cacheKey") ? config.cacheKey : false;
         //cache ttl
-        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : 60000;
+        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : cacheKeyTTL;
         //cache size
-        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : 100;
+        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : cacheSize;
         //set grace period
         var gracePeriod = config.hasOwnProperty("gracePeriod") ? config.gracePeriod : 0;
         acceptField.gracePeriod = gracePeriod;
