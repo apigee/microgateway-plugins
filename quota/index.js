@@ -67,7 +67,9 @@ module.exports.init = function(config, logger, stats) {
         const prodList = [];
         if (Array.isArray(req.token.api_product_list)) {
             req.token.api_product_list.reduce((acc, prod) => {
-                if (prodsObj[prod].basePaths[req.url] === true) acc.push(prod);
+                if (prodsObj[prod] && 
+                    prodsObj[prod].basePaths && 
+                    prodsObj[prod].basePaths[req.url] === true) acc.push(prod);
                 return acc;
             }, prodList);
 
