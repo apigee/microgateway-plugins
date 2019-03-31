@@ -12,7 +12,7 @@
     "eureka-js-client": "^4.3.0",
     "js2xmlparser": "^2.0.2",
     "jsrsasign": "^7.2.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "lynx": "^0.2.0",
     "memored": "^1.1.1",
     "minimatch": "^3.0.4",
@@ -27,13 +27,13 @@
     "xml2js": "^0.4.17"
   },
   "devDependencies": {
-    "js-yaml": "^3.4.2",
+    "js-yaml": "^3.13",
     "chai": "^2.3.0",
     "config": "^1.13.0",
     "mocha": "^5.2.0",
     "supertest": "^3.1.0",
     "jsonwebtoken": "^5.0.1",
-    "pem": "^1.7.2",
+    "pem": "^1.14.2",
     "volos-analytics-memory": "^0.2.0",
     "volos-quota-memory": "^0.11.0"
   }
