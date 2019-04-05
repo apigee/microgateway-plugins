@@ -4,9 +4,7 @@
 // let { user, password, key, secret, org, env, tokenSecret, tokenId } = require('./env.js');
 // const assert = require('assert');
 
-// quotaServer.js
 
-// 'use strict';
 // const http = require('http');
 // const url = require('url');
 // const quotaServer = http.createServer((req,res) => { 
@@ -210,7 +208,7 @@
 //         assert.deepStrictEqual(q1_x.resp.statusCode, 403);
 //         await awaitTime(150);
 
-       
+//        quotaServer.close();
 
 //     } catch (err) {
 //         console.error('quotabug err', err);
