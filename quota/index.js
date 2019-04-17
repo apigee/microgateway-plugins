@@ -3,7 +3,7 @@
 var async = require('async');
 var Quota = require('volos-quota-apigee');
 var debug = require('debug')('gateway:quota');
-
+var url = require('url');
 module.exports.init = function(config, logger, stats) {
 
     const { product_to_proxy, proxies } = config;
@@ -63,18 +63,20 @@ module.exports.init = function(config, logger, stats) {
         debug('quota checking products', req.token.api_product_list);
 
         req.originalUrl = req.originalUrl || req.url; // emulate connect
+        
+        let matchedPathProxy = res.proxy.base_path || url.parse(req.url).pathname || '';
+        debug('matchedPathProxy',matchedPathProxy);
 
         const prodList = [];
         if (Array.isArray(req.token.api_product_list)) {
             req.token.api_product_list.reduce((acc, prod) => {
                 if (prodsObj[prod] && 
                     prodsObj[prod].basePaths && 
-                    prodsObj[prod].basePaths[req.url] === true) acc.push(prod);
+                    prodsObj[prod].basePaths[matchedPathProxy] === true) acc.push(prod);
                 return acc;
             }, prodList);
 
-            debug('prodList');
-            debug(prodList);
+            debug('prodList', prodList);
         }
 
         // this is arbitrary, but not sure there's a better way?
