@@ -38,6 +38,7 @@ module.exports.init = function(config, logger, stats) {
         }
 
         const basePaths = {};
+
         if (Array.isArray(proxies)) {
             proxies.reduce((acc, prox) => {
                 if (prox.name !== 'edgemicro-auth' && prodObj[prox.name] === true) acc[prox.base_path] = true;
