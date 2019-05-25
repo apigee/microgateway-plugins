@@ -128,7 +128,7 @@ module.exports.init = function(config, logger, stats) {
     }
 
     var exchangeApiKeyForToken = function(req, res, next, config, logger, stats, middleware, apiKey) {
-        var cacheControl = req.headers['cache-control'];
+        var cacheControl = req.headers['cache-control'] || 'no-cache';
         if (cacheKey || (!cacheControl || (cacheControl && cacheControl.indexOf('no-cache') < 0))) { // caching is allowed
             cache.read(apiKey, function(err, value) {
                 if (value) {
@@ -293,7 +293,7 @@ module.exports.init = function(config, logger, stats) {
             req.headers['x-authorization-claims'] = Buffer.from(JSON.stringify(authClaims)).toString('base64');
 
             if (apiKey) {
-                var cacheControl = req.headers['cache-control'];
+                var cacheControl = req.headers['cache-control'] || 'no-cache';
                 if (cacheKey || (!cacheControl || (cacheControl && cacheControl.indexOf('no-cache') < 0))) { // caching is allowed
                     // default to now (in seconds) + 30m if not set
                     decodedToken.exp = decodedToken.exp || +(((Date.now() / 1000) + 1800).toFixed(0));

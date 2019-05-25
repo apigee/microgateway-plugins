@@ -20,5 +20,6 @@ module.exports = {
   monitor: require('./monitor'),
   apikeys: require('./apikeys'),
   oauthv2: require('./oauthv2'),
-  extauth: require('./extauth')
+  extauth: require('./extauth'),
+  invalidHeader: require('./invalidHeader')
 }
