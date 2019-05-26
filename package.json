@@ -14,7 +14,6 @@
     "jsrsasign": "^7.2.0",
     "lodash": "^4.17.11",
     "lynx": "^0.2.0",
-    "memored": "^1.1.1",
     "minimatch": "^3.0.4",
     "portastic": "^1.0.1",
     "request": "^2.87.0",
