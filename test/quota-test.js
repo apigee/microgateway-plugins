@@ -1,18 +1,6 @@
 const quota = require('../quota/index');
 const assert = require('assert');
 
-var exampleConfig = { 
-  EdgeMicroTestProduct: {
-    allow: process.env.QUOTA_ALLOW,
-    interval: Number(process.env.QUOTA_INTERVAL),
-    timeUnit: process.env.QUOTA_TIMEUNIT,
-    bufferSize: process.env.QUOTA_BUFFERSIZE,
-    uri: process.env.QUOTA_URI,
-    key: process.env.QUOTA_KEY,
-    secret: process.env.QUOTA_SECRET 
-  }
-}
-
 describe('quota plugin', () => {
   var plugin = null;
   
@@ -20,8 +8,19 @@ describe('quota plugin', () => {
     var logger = {};
     var stats = {};
 
+    var exampleConfig = { 
+      EdgeMicroTestProduct: {
+        allow: process.env.QUOTA_ALLOW,
+        interval: Number(process.env.QUOTA_INTERVAL),
+        timeUnit: process.env.QUOTA_TIMEUNIT,
+        bufferSize: process.env.QUOTA_BUFFERSIZE,
+        uri: process.env.QUOTA_URI,
+        key: process.env.QUOTA_KEY,
+        secret: process.env.QUOTA_SECRET 
+      }
+    }
+    
     plugin = quota.init.apply(null, [exampleConfig, logger, stats]);
-
   });
  
   it('exposes an onrequest handler', () => {
