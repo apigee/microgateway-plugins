@@ -48,6 +48,8 @@ extauth:
   exp: true # can be true or false, but defaults to true; use true to check for the expiry time and send an error if the token is expired.
   sendErr: true # can be either true or false, but defaults to true; set this to false if you want the extauth plugin to send an error if the JWT is invalid.
   keepAuthHeader: false # can be true or false; default is false; set this to true if you want to pass the Authorization header to the backend.
+  extauth-claims-header: "header to be added with base64 encoded string of claims from authorization bearer jwt payload. Example value: x-extauth-claims" # default null for backward compatibility. When present, jwt payload claims are extracted and added as a request header of this name
+  extauth-exclude-claims: "array of claims to be excluded from extauth-claims-header" # used only when `extauth-claims-header` is set. Example value: ['application_name', 'client_id', 'api_product_list', 'iat', 'exp']
 ```
 
 ## Enable the plugin

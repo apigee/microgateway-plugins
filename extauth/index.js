@@ -3,6 +3,7 @@
  *
  */
 
+var _ = require('lodash');
 var debug = require('debug')('plugin:extauth');
 var request = require('request');
 var rs = require('jsrsasign');
@@ -28,7 +29,11 @@ module.exports.init = function(config, logger, stats) {
     var sendErr = config.hasOwnProperty("sendErr") ? config.sendErr : true;
     //preserve or delete the auth header
     var keepAuthHeader = config.hasOwnProperty('keep-authorization-header') ? config['keep-authorization-header'] : false;
-
+    //extracts jwt claims from header authorization bearer jwt and adds them in a new header x-extauth-claims (default null for backward compatibility)
+    var extauthClaimsHeader = config.hasOwnProperty('extauth-claims-header') ? config['extauth-claims-header'] : null;
+    //sensitive claims to be omitted from extauth claims header, if enabled
+    var PRIVATE_JWT_VALUES = config.hasOwnProperty('extauth-exclude-claims') ? config['extauth-exclude-claims'] : ['application_name', 'client_id', 'api_product_list', 'iat', 'exp'];
+    
     if (iss) {
         debug("Issuer " + iss);
         acceptField.iss = [];
@@ -107,6 +112,10 @@ module.exports.init = function(config, logger, stats) {
                             debug("key type is PEM");
                             isValid = validateJWT(publickeys, jwtpayload[1], exp);
                             if (isValid) {
+                                if(extauthClaimsHeader) {
+                                    var authClaims = _.omit(jwtdecode.payloadObj, PRIVATE_JWT_VALUES);
+                                    req.headers[extauthClaimsHeader] = new Buffer(JSON.stringify(authClaims)).toString('base64');
+                                }
                                 if (!keepAuthHeader) {
                                     delete(req.headers['authorization']);
                                 }
@@ -145,6 +154,10 @@ module.exports.init = function(config, logger, stats) {
                                 isValid = validateJWT(pem, jwtpayload[1], exp);
                                 if (isValid) {
                                     debug("JWT is valid");
+                                    if(extauthClaimsHeader) {
+                                        var authClaims = _.omit(jwtdecode.payloadObj, PRIVATE_JWT_VALUES);
+                                        req.headers[extauthClaimsHeader] = new Buffer(JSON.stringify(authClaims)).toString('base64');
+                                    }
                                     if (!keepAuthHeader) {
                                         delete(req.headers['authorization']);
                                     }
