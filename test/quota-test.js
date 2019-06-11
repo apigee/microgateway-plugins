@@ -23,10 +23,6 @@ describe('quota plugin', () => {
     plugin = quota.init.apply(null, [exampleConfig, logger, stats]);
   });
  
-  it('exposes an onrequest handler', () => {
-    assert.ok(plugin.onrequest);
-  });
-
 /*  it('will quota limit after 3 API calls', (done) => {
     var count = 0;
     var onrequest_cb = (err) => {
