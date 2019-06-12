@@ -1,8 +1,15 @@
 'use strict';
 
+
+// QUOTA-MEMORY
+// module:  microgateway-plugins/quota-memory
+
+
 var async = require('async');
 var Quota = require('volos-quota-memory');
 var debug = require('debug')('gateway:quota');
+
+
 
 module.exports.init = function(config, logger, stats) {
   var quotas = {}; // productName -> connectMiddleware

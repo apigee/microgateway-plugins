@@ -1,9 +1,15 @@
 'use strict';
 
+// QUOTA
+// module:  microgateway-plugins/quota 
+
+
 var async = require('async');
 var Quota = require('volos-quota-apigee');
 var debug = require('debug')('gateway:quota');
 var url = require('url');
+
+
 module.exports.init = function(config, logger, stats) {
 
     const { product_to_proxy, proxies } = config;
@@ -14,6 +20,14 @@ module.exports.init = function(config, logger, stats) {
             return req.token.application_name;
         }
     };
+
+    var quotaManagers = {}
+
+    if (  product_to_proxy == undefined  || proxies== undefined ) {
+        //
+        debug("quota plugin did not recieve valid produc-proxy map or list of proxies")
+        return(undefined)
+    }
 
     Object.keys(config).forEach(function(productName) {
         var product = config[productName];
@@ -52,6 +66,8 @@ module.exports.init = function(config, logger, stats) {
         config[productName].request = config.request;
         var quota = Quota.create(config[productName]);
         quotas[productName] = quota.connectMiddleware().apply(options);
+        //
+        quotaManagers[productName] = quota;
         debug('created quota for', productName);
     });
 
@@ -103,11 +119,27 @@ module.exports.init = function(config, logger, stats) {
         },
 
         onrequest: function(req, res, next) {
-            if (process.env.EDGEMICRO_LOCAL) {
+            if ( process.env.EDGEMICRO_LOCAL !== undefined ) {
                 debug("MG running in local mode. Skipping Quota");
                 next();
             } else {
                 middleware(req, res, next);
+            }
+        },
+
+        shutdown: function() {
+            // look for extant timers ... for global graceful shutdown...
+            for ( var qmKey in quotaManagers ) {
+                var q = quotaManagers[qmKey];
+                if ( q.quota ) {
+                    q = q.quota;
+                }
+                if ( q.bucketTimer ) {
+                    clearInterval(q.bucketTimer)
+                }
+                if ( q.flushTimer ) {
+                    clearInterval(q.flushTimer)
+                }
             }
         }
 
