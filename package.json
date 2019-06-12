@@ -9,6 +9,7 @@
   "dependencies": {
     "async": "^1.4.2",
     "debug": "^3.1.0",
+    "dotenv": "^8.0.0",
     "eureka-js-client": "^4.3.0",
     "js2xmlparser": "^2.0.2",
     "jsrsasign": "^7.2.0",
@@ -18,10 +19,10 @@
     "portastic": "^1.0.1",
     "request": "^2.87.0",
     "toobusy-js": "^0.5.1",
-    "volos-quota-common": "^0.11.6",
     "volos-analytics-apigee": "^0.4.0",
     "volos-cache-memory": "^0.10.0",
     "volos-quota-apigee": "^0.13.0",
+    "volos-quota-common": "^0.11.6",
     "volos-quota-memory": "^0.11.0",
     "volos-spikearrest-memory": "^0.10.0",
     "xml2js": "^0.4.17"
