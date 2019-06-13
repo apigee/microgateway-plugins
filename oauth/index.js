@@ -35,10 +35,15 @@ var tokenCacheSize = 100;
 
 module.exports.init = function(config, logger, stats) {
 
+    if ( config === undefined || !config ) return(undefined);
+
     var request = config.request ? requestLib.defaults(config.request) : requestLib;
     var keys = config.jwk_keys ? JSON.parse(config.jwk_keys) : null;
 
     var middleware = function(req, res, next) {
+
+        if ( !req || !res ) return(-1); // need to check bad args 
+        if ( !req.headers ) return(-1); // or throw -- means callers are bad
 
         var authHeaderName = config.hasOwnProperty('authorization-header') ? config['authorization-header'] : 'authorization';
         var apiKeyHeaderName = config.hasOwnProperty('api-key-header') ? config['api-key-header'] : 'x-api-key';
@@ -280,19 +285,6 @@ module.exports.init = function(config, logger, stats) {
         }
     };
 
-
-    return {
-
-        onrequest: function(req, res, next) {
-            if (process.env.EDGEMICRO_LOCAL == "1") {
-                debug ("MG running in local mode. Skipping OAuth");
-                next();
-            } else {
-                middleware(req, res, next);
-            }
-        }
-    };
-
     function authorize(req, res, next, logger, stats, decodedToken, apiKey) {
         if (checkIfAuthorized(config, req.reqUrl.path, res.proxy, decodedToken)) {
             req.token = decodedToken;
@@ -318,7 +310,28 @@ module.exports.init = function(config, logger, stats) {
         }
     }
 
-}
+    return {
+        onrequest: function(req, res, next) {
+            if (process.env.EDGEMICRO_LOCAL == "1") {
+                debug ("MG running in local mode. Skipping OAuth");
+                next();
+            } else {
+                middleware(req, res, next);
+            }
+        },
+
+        shutdown() {
+            // tests are needing shutdowns to remove services that keep programs running, etc.
+        }
+    };
+
+}  // end of init
+
+
+
+
+
+
 
 // from the product name(s) on the token, find the corresponding proxy
 // then check if that proxy is one of the authorized proxies in bootstrap
@@ -444,10 +457,12 @@ function sendError(req, res, next, logger, stats, code, message) {
     };
 
     debug('auth failure', res.statusCode, code, message ? message : '', req.headers, req.method, req.url);
-    logger.error({
-        req: req,
-        res: res
-    }, 'oauth');
+    if ( logger && logger.error && (typeof logger.error === 'function') ) {
+        logger.error({
+            req: req,
+            res: res
+        }, 'oauth');
+    }
 
     //opentracing
     if (process.env.EDGEMICRO_OPENTRACE) {
@@ -458,9 +473,26 @@ function sendError(req, res, next, logger, stats, code, message) {
     }
     //
 
-    if (!res.finished) res.setHeader('content-type', 'application/json');
-    res.end(JSON.stringify(response));
-    stats.incrementStatusCount(res.statusCode);
+    if ( !res.finished ) {
+        try {
+            res.setHeader('content-type', 'application/json');
+        } catch (e) {
+            console.warn("oath response object lacks setHeader")
+        }
+    }
+
+    try {
+        res.end(JSON.stringify(response));
+    } catch (e) {
+        console.warn("oath response object is not supplied by runtime")
+    }
+    
+    try {
+        stats.incrementStatusCount(res.statusCode);
+    } catch (e) {
+        console.warn("oath stats object is not supplied by runtime")
+    }
+    
     next(code, message);
     return code;
 }
