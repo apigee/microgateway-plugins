@@ -322,6 +322,10 @@ module.exports.init = function(config, logger, stats) {
 
         shutdown() {
             // tests are needing shutdowns to remove services that keep programs running, etc.
+        },
+
+        testing: {
+            ejectToken
         }
     };
 
@@ -419,6 +423,7 @@ function getPEM(decodedToken, keys) {
     return rs.KEYUTIL.getPEM(publickey);
 }
 
+// this should be in a separate module. This code is being copied from instance to instance.
 function ejectToken(expTimestampInSeconds) {
     var currentTimestampInSeconds = new Date().getTime() / 1000;
     var gracePeriod = parseInt(acceptField.gracePeriod)

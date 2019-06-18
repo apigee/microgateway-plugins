@@ -118,7 +118,7 @@ module.exports.init = function(config, logger, stats) {
                         } else {
                             debug('validating jwt');
                             isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
-                        }                            
+                        }
                     } catch (error) {
                         console.warn('error parsing jwt: ' + oauthtoken);
                     }
@@ -145,13 +145,17 @@ module.exports.init = function(config, logger, stats) {
                 }
             });
         } else {
-            if (keys) {
-                debug('using jwk');
-                var pem = getPEM(decodedToken, keys);
-                isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
-            } else {
-                debug('validating jwt');
-                isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
+            try {
+                if (keys) {
+                    debug('using jwk');
+                    var pem = getPEM(decodedToken, keys);
+                    isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
+                } else {
+                    debug('validating jwt');
+                    isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
+                }
+            } catch (error) {
+                console.warn('error parsing jwt: ' + oauthtoken);
             }
             if (!isValid) {
                 if (config.allowInvalidAuthorization) {
@@ -167,21 +171,6 @@ module.exports.init = function(config, logger, stats) {
         }
     };
 
-    return {
-        onrequest: function(req, res, next) {
-            if (process.env.EDGEMICRO_LOCAL == "1") {
-                debug ("MG running in local mode. Skipping OAuth");
-                next();
-            } else {
-                middleware(req, res, next);
-            }
-        },
-
-        testing: {
-            ejectToken,
-        },
-    };
-
     function authorize(req, res, next, logger, stats, decodedToken) {
         if (checkIfAuthorized(config, req.reqUrl.path, res.proxy, decodedToken)) {
             req.token = decodedToken;
@@ -192,6 +181,26 @@ module.exports.init = function(config, logger, stats) {
             return sendError(req, res, next, logger, stats, 'access_denied');
         }
     }
+
+    return {
+        onrequest: function(req, res, next) {
+            if (process.env.EDGEMICRO_LOCAL == "1") {
+                debug ("MG running in local mode. Skipping OAuth");
+                next();
+            } else {
+                middleware(req, res, next);
+            }
+        },
+
+        shutdown() {
+            // tests are needing shutdowns to remove services that keep programs running, etc.
+        },
+
+        // specifically a way of exporting support routines for coverage testing
+        testing: {
+            ejectToken
+        }
+    };
 
 }
 
@@ -281,6 +290,7 @@ function getPEM(decodedToken, keys) {
     return rs.KEYUTIL.getPEM(publickey);
 }
 
+// this should be in a separate module. This code is being copied from instance to instance.
 function ejectToken(expTimestampInSeconds) {
     var currentTimestampInSeconds = new Date().getTime() / 1000;
     var gracePeriod = parseInt(acceptField.gracePeriod)
