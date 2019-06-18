@@ -7,4 +7,4 @@ jobs:
       script: npm test
     -
       script: echo "this is done"
-
+      if: TRAVIS_EVENT == 'cron'
