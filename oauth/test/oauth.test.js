@@ -2,7 +2,7 @@
 
 'use strict';
 
-var helper = require('../../test-helper');
+var helper = require('./test-helper');
 var config = helper.config();
 
 var debug = require('debug')('plugin:oauth:test');

@@ -33,10 +33,15 @@ var tokenCacheSize = 100;
 
 module.exports.init = function(config, logger, stats) {
 
+    if ( config === undefined || !config ) return(undefined);
+
     var request = config.request ? requestLib.defaults(config.request) : requestLib;
     var keys = config.jwk_keys ? JSON.parse(config.jwk_keys) : null;
 
     var middleware = function(req, res, next) {
+
+        if ( !req || !res ) return(-1); // need to check bad args 
+        if ( !req.headers ) return(-1); // or throw -- means callers are bad
 
         var authHeaderName = config.hasOwnProperty('authorization-header') ? config['authorization-header'] : 'authorization';
         var keepAuthHeader = config.hasOwnProperty('keep-authorization-header') ? config['keep-authorization-header'] : false;
