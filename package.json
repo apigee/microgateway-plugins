@@ -28,14 +28,14 @@
     "xml2js": "^0.4.17"
   },
   "devDependencies": {
-    "js-yaml": "^3.4.2",
     "chai": "^2.3.0",
     "config": "^1.13.0",
-    "mocha": "^5.2.0",
-    "nyc": "^13.3.0",
-    "supertest": "^3.1.0",
+    "js-yaml": "^3.4.2",
     "jsonwebtoken": "^5.0.1",
+    "mocha": "^5.2.0",
+    "nyc": "^14.1.1",
     "pem": "^1.7.2",
+    "supertest": "^3.1.0",
     "volos-analytics-memory": "^0.2.0",
     "volos-quota-memory": "^0.11.0"
   }

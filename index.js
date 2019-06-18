@@ -22,5 +22,5 @@ module.exports = {
   oauthv2: require('./oauthv2'),
   extauth: require('./extauth'),
   invalidHeader: require('./invalidHeader'),
-  memored: require('./third_party/memored');
+  memored: require('./third_party/memored'),
 }

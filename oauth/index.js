@@ -248,8 +248,8 @@ module.exports.init = function(config, logger, stats) {
                 } else {
                     if (tokenvalue == null || tokenvalue == undefined) {
                         map.size(function(err, sizevalue) {
-                            if (!err && sizevalue != null && sizevalue < 100) {
-                                map.store(oauthtoken, oauthtoken);
+                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
+                                map.store(oauthtoken, oauthtoken, decodedToken.payloadObj.exp);
                             } else {
                                 debug('too many tokens in cache; ignore storing token');
                             }
@@ -298,7 +298,7 @@ module.exports.init = function(config, logger, stats) {
                     // default to now (in seconds) + 30m if not set
                     decodedToken.exp = decodedToken.exp || +(((Date.now() / 1000) + 1800).toFixed(0));
                     //apiKeyCache[apiKey] = decodedToken;
-                    cache.store(apiKey, decodedToken);
+                    cache.store(apiKey, decodedToken,decodedToken.exp);
                     debug('api key cache store', apiKey);
                 } else {
                     debug('api key cache skip', apiKey);
@@ -419,15 +419,10 @@ function getPEM(decodedToken, keys) {
     return rs.KEYUTIL.getPEM(publickey);
 }
 
-function ejectToken(expTimestamp) {
+function ejectToken(expTimestampInSeconds) {
     var currentTimestampInSeconds = new Date().getTime() / 1000;
-    var timeDifferenceInSeconds = (expTimestamp - currentTimestampInSeconds);
-
-    if (Math.abs(timeDifferenceInSeconds) <= parseInt(acceptField.gracePeriod)) {
-        return true;
-    } else {
-        return false;
-    }
+    var gracePeriod = parseInt(acceptField.gracePeriod)
+    return currentTimestampInSeconds > expTimestampInSeconds + gracePeriod
 }
 
 function sendError(req, res, next, logger, stats, code, message) {

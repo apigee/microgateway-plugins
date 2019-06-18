@@ -7,6 +7,7 @@ denv.config();
 
 var emtProxy = () => {}
 
+// TODO: this config format is incorrect, revist use of env vars in this test
 var exampleConfig = { 
   EdgeMicroTestProduct: {
     allow: process.env.QUOTA_ALLOW,
