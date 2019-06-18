@@ -4,7 +4,7 @@ node_js:
 jobs:
   include:
     - stage: test
-      npm test
+      script: npm test
     - stage: test 2
-      script: script: echo "this is done"
+      script: echo "this is done"
 
