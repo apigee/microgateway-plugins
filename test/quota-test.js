@@ -145,8 +145,7 @@ describe('quota plugin', function() {
     assert.ok(plugin.onrequest);
     done();
   });
-
-
+ 
 
   it('will throw on bad time unit',(done) => {
     try {
@@ -191,9 +190,7 @@ describe('quota plugin', function() {
   })
 
 
-
-
-it('will quota limit after 3 API calls', (done) => {
+  it('will quota limit after 3 API calls', (done) => {
     var count = 0;
     var onrequest_cb = (err) => {
       count++;
@@ -325,3 +322,4 @@ it('will quota limit after 3 API calls', (done) => {
   });
 
 });
+
