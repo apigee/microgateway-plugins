@@ -87,7 +87,7 @@ module.exports.init = function (config, logger, stats) {
           req.targetSecure = false;
         }        
       } else {
-        console.warn("Target enpoint from Eureka not found");
+        console.warn("Target endpoint from Eureka not found");
       }
       next();
     }   
