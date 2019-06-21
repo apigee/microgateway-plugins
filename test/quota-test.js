@@ -189,8 +189,52 @@ describe('quota plugin', function() {
     //
   })
 
+  it('will throw on bad time unit',(done) => {
+    try {
+      quota.init.apply(null, [exampleBogusConfig_timeUnit, logger, stats]);
+    } catch(e) {
+      assert(true);
+    }
+    done();
+  })
 
-  it('will quota limit after 3 API calls', (done) => {
+
+  it('will throw on no URI',(done) => {
+    try {
+      quota.init.apply(null, [exampleBogusConfig_NoURI_NOKEY, logger, stats]);
+    } catch(e) {
+      assert(true);
+    }
+    done();
+  })
+  
+
+  it('will throw on no KEY',(done) => {
+    try {
+      exampleBogusConfig_NoURI_NOKEY.EdgeMicroTestProduct.uri = exampleConfig.EdgeMicroTestProduct.uri
+      quota.init.apply(null, [exampleBogusConfig_NoURI_NOKEY, logger, stats]);
+    } catch(e) {
+      assert(true);
+    }
+    done();
+  })
+
+  it('defers to a local handler',(done) => {
+    //
+    var pars = [].concat(generic_req_params)
+    pars[2] = () => {
+      delete process.env.EDGEMICRO_LOCAL;
+      done();
+    }
+    process.env.EDGEMICRO_LOCAL = "This is a test"
+    plugin.onrequest.apply(null, pars);
+    //
+  })
+
+
+
+
+it('will quota limit after 3 API calls', (done) => {
     var count = 0;
     var onrequest_cb = (err) => {
       count++;
@@ -322,4 +366,3 @@ describe('quota plugin', function() {
   });
 
 });
-

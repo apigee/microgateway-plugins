@@ -1,10 +1,15 @@
 {
   "name": "microgateway-plugins",
-  "version": "2.6.0",
+  "version": "3.0.0",
   "description": "Plugins for Apige Edge Microgateway",
+  "license": "Apache-2.0",
   "main": "index.js",
   "scripts": {
     "test": "nyc ./node_modules/.bin/mocha -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apigee/microgateway-plugins.git"
   },
   "dependencies": {
     "async": "^1.4.2",
@@ -36,7 +41,6 @@
     "nyc": "^14.1.1",
     "pem": "^1.7.2",
     "supertest": "^3.1.0",
-    "volos-analytics-memory": "^0.2.0",
-    "volos-quota-memory": "^0.11.0"
+    "volos-analytics-memory": "^0.2.0"
   }
 }
