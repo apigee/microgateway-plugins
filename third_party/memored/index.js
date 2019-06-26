@@ -55,7 +55,7 @@ function _findWorkerByPid(workerPid) {
 		worker;
 
 	for (; i < len; i++) {
-		if (cluster.workers[workerIds[i]].process.pid == workerPid) {
+		if (cluster.workers[workerIds[i]].process.pid === workerPid) {
 			worker = cluster.workers[workerIds[i]];
 			break;
 		}
@@ -78,7 +78,7 @@ function _getResultParamsValues(paramsObj) {
 function _sendMessageToWorker(message) {
 	var worker = _findWorkerByPid(message.workerPid);
 	//check if the process is up
-	if (worker && worker.isDead() == false) worker.send(message);
+	if (worker && worker.isDead() === false) worker.send(message);
 }
 
 function _sendMessageToMaster(message) {

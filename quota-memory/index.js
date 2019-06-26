@@ -11,7 +11,7 @@ var debug = require('debug')('gateway:quota');
 
 
 
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(config /*, logger, stats */) {
   var quotas = {}; // productName -> connectMiddleware
 
   var options = {
@@ -42,7 +42,8 @@ module.exports.init = function(config, logger, stats) {
       function(productName, cb) {
         var connectMiddleware = quotas[productName];
         debug('applying quota for', productName);
-        connectMiddleware ? connectMiddleware(req, res, cb) : cb();
+        if ( connectMiddleware ){  connectMiddleware(req, res, cb) } else cb();
+
       },
       function(err) {
         next(err);

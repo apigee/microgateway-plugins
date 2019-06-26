@@ -7,7 +7,7 @@
  * plugin, which will accumulate chunks and deliver them concatenated as one data
  * Buffer to the onend handler.
  */
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(/* config, logger, stats */) {
 
   // perform content transformation here
   // the result of the transformation must be another Buffer

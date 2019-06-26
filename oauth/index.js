@@ -16,7 +16,7 @@ const authHeaderRegex = /Bearer (.+)/;
 const PRIVATE_JWT_VALUES = ['application_name', 'client_id', 'api_product_list', 'iat', 'exp'];
 const SUPPORTED_DOUBLE_ASTERIK_PATTERN = "**";
 const SUPPORTED_SINGLE_ASTERIK_PATTERN = "*";
-const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";
+// const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";
 
 const acceptAlg = ['RS256'];
 
@@ -60,7 +60,7 @@ module.exports.init = function(config, logger, stats) {
         //this flag will enable check against resource paths only
         productOnly = config.hasOwnProperty('productOnly') ? config.productOnly : false;
         //if local proxy is set, ignore proxies
-        if (process.env.EDGEMICRO_LOCAL_PROXY == "1") {
+        if (process.env.EDGEMICRO_LOCAL_PROXY === "1") {
             productOnly = true;
         }
         //token cache settings
@@ -69,6 +69,7 @@ module.exports.init = function(config, logger, stats) {
         tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : 100;
         //
         //support for enabling oauth or api key only
+        var header = false;
         if (oauth_only) {
             if (!req.headers[authHeaderName]) {
                 if (config.allowNoAuthorization) {
@@ -78,8 +79,8 @@ module.exports.init = function(config, logger, stats) {
                     return sendError(req, res, next, logger, stats, 'missing_authorization', 'Missing Authorization header');
                 }
             } else {
-                var header = authHeaderRegex.exec(req.headers[authHeaderName]);
-                if (!header || header.length < 2) {
+                header = authHeaderRegex.exec(req.headers[authHeaderName]);
+                if ( !(header) || (header.length < 2) ) {
                     debug('Invalid Authorization Header');
                     return sendError(req, res, next, logger, stats, 'invalid_request', 'Invalid Authorization header');
                 }
@@ -92,8 +93,9 @@ module.exports.init = function(config, logger, stats) {
         }
 
         //leaving rest of the code same to ensure backward compatibility
-        if (!req.headers[authHeaderName] || config.allowAPIKeyOnly) {
-            if (apiKey = req.headers[apiKeyHeaderName]) {
+        if (!(req.headers[authHeaderName]) || config.allowAPIKeyOnly) {
+            apiKey = req.headers[apiKeyHeaderName]
+            if ( apiKey ) {
                 exchangeApiKeyForToken(req, res, next, config, logger, stats, middleware, apiKey);
             } else if (req.reqUrl && req.reqUrl.query && (apiKey = req.reqUrl.query[apiKeyHeaderName])) {
                 exchangeApiKeyForToken(req, res, next, config, logger, stats, middleware, apiKey);
@@ -104,7 +106,8 @@ module.exports.init = function(config, logger, stats) {
                 return sendError(req, res, next, logger, stats, 'missing_authorization', 'Missing Authorization header');
             }
         } else {
-            var header = authHeaderRegex.exec(req.headers[authHeaderName]);
+            
+            header = authHeaderRegex.exec(req.headers[authHeaderName]);
             if (!config.allowInvalidAuthorization) {
                 if (!header || header.length < 2) {
                     debug('Invalid Authorization Header');
@@ -212,10 +215,10 @@ module.exports.init = function(config, logger, stats) {
             return sendError(req, res, next, logger, stats, 'invalid_token','token could not be parsed');
         }
         //
-        if (tokenCache == true) {
+        if (tokenCache === true) {
             debug('token caching enabled')
             map.read(oauthtoken, function(err, tokenvalue) {
-                if (!err && tokenvalue != undefined && tokenvalue != null && tokenvalue == oauthtoken) {
+                if (!err && tokenvalue !== undefined && tokenvalue !== null && tokenvalue === oauthtoken) {
                     debug('found token in cache');
                     isValid = true;
                     if (ejectToken(decodedToken.payloadObj.exp)) {
@@ -246,9 +249,9 @@ module.exports.init = function(config, logger, stats) {
                         return sendError(req, res, next, logger, stats, 'invalid_token');
                     }
                 } else {
-                    if (tokenvalue == null || tokenvalue == undefined) {
+                    if (tokenvalue === null || tokenvalue === undefined) {
                         map.size(function(err, sizevalue) {
-                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
+                            if (!err && sizevalue !== null && sizevalue < tokenCacheSize) {
                                 map.store(oauthtoken, oauthtoken, decodedToken.payloadObj.exp);
                             } else {
                                 debug('too many tokens in cache; ignore storing token');
@@ -312,7 +315,7 @@ module.exports.init = function(config, logger, stats) {
 
     return {
         onrequest: function(req, res, next) {
-            if (process.env.EDGEMICRO_LOCAL == "1") {
+            if (process.env.EDGEMICRO_LOCAL === "1") {
                 debug ("MG running in local mode. Skipping OAuth");
                 next();
             } else {
@@ -392,7 +395,7 @@ const checkIfAuthorized = module.exports.checkIfAuthorized = function checkIfAut
                     } else {
                         // if(apiproxy.includes(SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN)){
                         // }
-                        matchesProxyRules = urlPath == apiproxy;
+                        matchesProxyRules = urlPath === apiproxy;
 
                     }
                 }
@@ -415,7 +418,7 @@ function getPEM(decodedToken, keys) {
     var i = 0;
     debug('jwk kid ' + decodedToken.headerObj.kid);
     for (; i < keys.length; i++) {
-        if (keys.kid == decodedToken.headerObj.kid) {
+        if (keys.kid === decodedToken.headerObj.kid) {
             break;
         }
     }
@@ -430,26 +433,36 @@ function ejectToken(expTimestampInSeconds) {
     return currentTimestampInSeconds > expTimestampInSeconds + gracePeriod
 }
 
-function sendError(req, res, next, logger, stats, code, message) {
-
-    switch (code) {
-        case 'invalid_request':
+function setResponseCode(res,code) {
+    switch ( code ) {
+        case 'invalid_request': {
             res.statusCode = 400;
             break;
-        case 'access_denied':
+        }
+        case 'access_denied':{
             res.statusCode = 403;
             break;
+        }
         case 'invalid_token':
         case 'missing_authorization':
-        case 'invalid_authorization':
+        case 'invalid_authorization': {
             res.statusCode = 401;
             break;
-        case 'gateway_timeout':
+        }
+        case 'gateway_timeout': {
             res.statusCode = 504;
             break;
-        default:
+        }
+        default: {
             res.statusCode = 500;
+            break;
+        }
     }
+}
+
+function sendError(req, res, next, logger, stats, code, message) {
+
+    setResponseCode(res,code);
 
     var response = {
         error: code,

@@ -7,7 +7,7 @@ var debug = require('debug')('plugin:accesscontrol');
 var util = require("util");
 const dns = require('dns');
 
-module.exports.init = function (config, logger, stats) {
+module.exports.init = function (config /*, logger, stats */) {
 
 	var allow;
 	var deny;
@@ -19,13 +19,13 @@ module.exports.init = function (config, logger, stats) {
 	function checkAccessControlInfo(sourceIP) {
 		if (config === null) debug('WARNING: insufficient information to run accesscontrol');
 		else if (config.allow === null && config.deny === null) debug('WARNING: insufficient information to run accesscontrol');		
-		else if (config.allow != null) {
+		else if (config.allow !==  null) {
 			debug ('allow list: ' + util.inspect(config.allow, 2, true));
 			if (scanIP(config.allow, sourceIP)) {
 				allow = true;
 			}			
 		}
-		else if (config.deny != null) {
+		else if (config.deny !==  null) {
 			debug ('deny list: ' + util.inspect(config.deny, 2, true));
 			if (scanIP(config.deny, sourceIP)) {
 				debug ('deny incoming message');
@@ -51,12 +51,14 @@ module.exports.init = function (config, logger, stats) {
 	* for each list in the allow and deny, make sure they are proper
 	* IPv4 addresses
 	*/
+	/*   never used
 	function validateIPList(list) {
 		list.forEach(function(entry){
 			if (!checkIsIPV4(entry)) return false;
 		});
 		return true;
 	}
+	*/
 
 	function scanIP(list, sourceIP) {
 
@@ -64,9 +66,9 @@ module.exports.init = function (config, logger, stats) {
 		//no wildcard
 		for (var i=0; i < list.length; i++) {
 			//no wildcard
-			if (list[i].indexOf('*') == -1 && list[i] == sourceIP) {
+			if (list[i].indexOf('*') === -1 && list[i] === sourceIP) {
 				return true;
-			} else if (list[i].indexOf('*') != -1) { //contains wildcard
+			} else if (list[i].indexOf('*') !==  -1) { //contains wildcard
 				var listOctets = list[i].split('.');
 				if (octetCompare(listOctets, sourceOctets)) return true;			
 			}
@@ -83,9 +85,9 @@ module.exports.init = function (config, logger, stats) {
 		var compare = false;
 		for (var i=0; i < listOctets.length; i++) {
 			//debug('list ' + listOctets[i] + ' sourceOctets ' + sourceOctets[i]);
-			if (listOctets[i] != '*' && parseInt(listOctets[i]) == parseInt(sourceOctets[i])) {
+			if (listOctets[i] !==  '*' && parseInt(listOctets[i]) === parseInt(sourceOctets[i])) {
 				compare = true;
-			} else if (listOctets[i] != '*' && parseInt(listOctets[i]) != parseInt(sourceOctets[i])) {
+			} else if (listOctets[i] !==  '*' && parseInt(listOctets[i]) !==  parseInt(sourceOctets[i])) {
 				return false;
 			} 
 		}

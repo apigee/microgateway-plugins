@@ -27,9 +27,9 @@ var debug = require('debug')('plugin:json2xml');
 var js2xmlparser = require("js2xmlparser");
 //library to convert xml to json
 var parseString = require("xml2js").parseString;
-var util = require("util");
+//var util = require("util");
 
-module.exports.init = function (config, logger, stats) {
+module.exports.init = function (/*config, logger, stats*/) {
 
 	//initialize the variables to false
 
@@ -107,20 +107,20 @@ module.exports.init = function (config, logger, stats) {
 		//
 		ondata_request: function(req, res, data, next) {
 			debug('plugin ondata_request');
-			if (data && data.length > 0 && disable == false) accumulateRequest(req, data);
+			if (data && data.length > 0 && disable === false) accumulateRequest(req, data);
 			next(null, null);
 		},
 		//
 		//
 		ondata_response: function(req, res, data, next) {
 			debug('plugin ondata_response');
-			if (data && data.length > 0 && disable == false) accumulateResponse(res, data);
+			if (data && data.length > 0 && disable === false) accumulateResponse(res, data);
 			next(null, null);
 		},
 		//
 		onend_request: function(req, res, data, next) {
 			debug('plugin onend_request');
-			if (data && data.length > 0 && disable == false) accumulateRequest(res, data);
+			if (data && data.length > 0 && disable === false) accumulateRequest(res, data);
 			var content = null;
 			if(req._chunks && req._chunks.length) {
 				content = Buffer.concat(req._chunks);
@@ -153,7 +153,7 @@ module.exports.init = function (config, logger, stats) {
 		//
 		onend_response: function(req, res, data, next) {
 			debug('plugin onend_request');
-			if (data && data.length > 0 && disable == false) accumulateResponse(res, data);
+			if (data && data.length > 0 && disable === false) accumulateResponse(res, data);
 
 			var contentType = res.getHeader('content-type');
 			if (contentType && contentType.indexOf("application/xml") > -1) {

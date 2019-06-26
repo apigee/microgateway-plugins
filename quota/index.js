@@ -10,7 +10,7 @@ var debug = require('debug')('gateway:quota');
 var url = require('url');
 
 
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(config /*, logger, stats */) {
 
     const { product_to_proxy, proxies } = config;
     const prodsObj = {};
@@ -23,7 +23,7 @@ module.exports.init = function(config, logger, stats) {
 
     var quotaManagers = {}
 
-    if (  product_to_proxy == undefined  || proxies== undefined ) {
+    if (  (product_to_proxy === undefined)  || (proxies === undefined) ) {
         //
         debug("quota plugin did not recieve valid produc-proxy map or list of proxies")
         return(undefined)
@@ -37,9 +37,9 @@ module.exports.init = function(config, logger, stats) {
             return;
         }
 
-        if(product.timeUnit === 'month') {
-            product.timeUnit === '30days';
-        };
+        if ( product.timeUnit === 'month' ) {
+            product.timeUnit = '30days';
+        }
 
         const prodProxiesArr = product_to_proxy[productName];
 
@@ -104,7 +104,7 @@ module.exports.init = function(config, logger, stats) {
             function(productName, cb) {
                 var connectMiddleware = quotas[productName];
                 debug('applying quota for', productName);
-                connectMiddleware ? connectMiddleware(req, res, cb) : cb();
+                if ( connectMiddleware ){  connectMiddleware(req, res, cb) } else cb();
             },
             function(err) {
                 next(err);

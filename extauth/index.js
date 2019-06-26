@@ -44,7 +44,7 @@ module.exports.init = function(config, logger, stats) {
             console.log(err);
         } else {
             debug("loaded public keys");
-            if (keyType == 'jwk') {
+            if (keyType === 'jwk') {
                 debug("keyType is jwk");
                 publickeys = JSON.parse(body);
             } else {
@@ -55,9 +55,9 @@ module.exports.init = function(config, logger, stats) {
     });
 
     function getJWK(kid) {
-        if (publickeys.keys && publickeys.keys.constructor == Array) {
+        if (publickeys.keys && publickeys.keys.constructor === Array) {
             for (var i = 0; i < publickeys.keys.length; i++) {
-                if (publickeys.keys[i].kid == kid) {
+                if (publickeys.keys[i].kid === kid) {
                     return publickeys.keys[i];
                 }
             }
@@ -91,7 +91,7 @@ module.exports.init = function(config, logger, stats) {
             try {
                 var jwtpayload = authHeaderRegex.exec(req.headers['authorization']);
 
-                if (!jwtpayload || jwtpayload.length < 2) {
+                if ( !(jwtpayload) || (jwtpayload.length < 2) ) {
                     debug("ERROR - JWT Token Missing in Auth header");
                     delete(req.headers['authorization']);
                     delete(req.headers['x-api-key']);
@@ -100,10 +100,10 @@ module.exports.init = function(config, logger, stats) {
                     }
                 } else {
                     var jwtdecode = JWS.parse(jwtpayload[1]);
-                    if (jwtdecode.headerObj) {
+                    if ( jwtdecode.headerObj ) {
                         var kid = jwtdecode.headerObj.kid;
                         debug("Found jwt kid: " + kid);
-                        if (keyType != 'jwk') {
+                        if ( keyType !== 'jwk' ) {
                             debug("key type is PEM");
                             isValid = validateJWT(publickeys, jwtpayload[1], exp);
                             if (isValid) {
@@ -122,7 +122,7 @@ module.exports.init = function(config, logger, stats) {
                                     return sendError(req, res, next, logger, stats, 'invalid_token');
                                 }                                
                             }
-                        } else if (!kid && keyType == 'jwk') {
+                        } else if (!kid && keyType === 'jwk') {
                             debug("ERROR - JWT Missing kid in header");
                             delete(req.headers['authorization']);
                             delete(req.headers['x-api-key']);
@@ -184,26 +184,37 @@ module.exports.init = function(config, logger, stats) {
     };
 }
 
-function sendError(req, res, next, logger, stats, code, message) {
 
-    switch (code) {
-        case 'invalid_request':
+function setResponseCode(res,code) {
+    switch ( code ) {
+        case 'invalid_request': {
             res.statusCode = 400;
             break;
-        case 'access_denied':
+        }
+        case 'access_denied':{
             res.statusCode = 403;
             break;
+        }
         case 'invalid_token':
         case 'missing_authorization':
-        case 'invalid_authorization':
+        case 'invalid_authorization': {
             res.statusCode = 401;
             break;
-        case 'gateway_timeout':
+        }
+        case 'gateway_timeout': {
             res.statusCode = 504;
             break;
-        default:
+        }
+        default: {
             res.statusCode = 500;
+            break;
+        }
     }
+}
+
+function sendError(req, res, next, logger, stats, code, message) {
+
+    setResponseCode(res,code)
 
     var response = {
         error: code,

@@ -1,0 +1,12 @@
+{
+  "name": "edgemicro-plugin-oauthv2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A plugin for authenticating JWT tokens",
+  "dependencies": {
+    "debug": "^3.1.0",
+    "jsrsasign": "^7.2.0",
+    "lodash": "^4.17.10",
+    "request": "^2.87.0"
+  }
+}
