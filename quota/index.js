@@ -38,7 +38,7 @@ module.exports.init = function(config /*, logger, stats */) {
         }
 
         if ( product.timeUnit === 'month' ) {
-            product.timeUnit = '30days';
+            //product.timeUnit = '30days';  // this is broken - volos does not consider 30days as an option, but tries to process it anyway.
         }
 
         const prodProxiesArr = product_to_proxy[productName];
