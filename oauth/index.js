@@ -31,7 +31,10 @@ map.setup({
     purgeInterval: 10000
 });
 
-var tokenCacheSize = 100;
+var tokenCacheSize = 100; //default cache size for access tokens
+var tokenCacheTTL = 60000; //set default token cache TTL to 1 minute 
+var cacheKeyTTL = 60000; //set default apikey cache TTL to 1 minute
+var cacheSize = 100; //default cache size for api keys
 
 module.exports.init = function(config, logger, stats) {
 
@@ -49,6 +52,10 @@ module.exports.init = function(config, logger, stats) {
         var apiKeyHeaderName = config.hasOwnProperty('api-key-header') ? config['api-key-header'] : 'x-api-key';
         var keepAuthHeader = config.hasOwnProperty('keep-authorization-header') ? config['keep-authorization-header'] : false;
         cacheKey = config.hasOwnProperty('cacheKey') ? config.cacheKey : false;
+        //cache ttl
+        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : 60000;
+        //cache size
+        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : 100;
         //set grace period
         var gracePeriod = config.hasOwnProperty('gracePeriod') ? config.gracePeriod : 0;
         acceptField.gracePeriod = gracePeriod;
@@ -65,6 +72,8 @@ module.exports.init = function(config, logger, stats) {
         }
         //token cache settings
         tokenCache = config.hasOwnProperty('tokenCache') ? config.tokenCache : false;
+        //token cache ttl
+        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : 60000;
         //max number of tokens in the cache
         tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : 100;
         //
@@ -206,6 +215,7 @@ module.exports.init = function(config, logger, stats) {
 
         var isValid = false;
         var oauthtoken = token && token.token ? token.token : token;
+<<<<<<< HEAD
         var decodedToken = null;
         //
         try {
@@ -216,6 +226,11 @@ module.exports.init = function(config, logger, stats) {
         }
         //
         if (tokenCache === true) {
+=======
+        var decodedToken = JWS.parse(oauthtoken);
+
+        if (tokenCache == true) {
+>>>>>>> support explicit cache ttl
             debug('token caching enabled')
             map.read(oauthtoken, function(err, tokenvalue) {
                 if (!err && tokenvalue !== undefined && tokenvalue !== null && tokenvalue === oauthtoken) {
@@ -251,8 +266,13 @@ module.exports.init = function(config, logger, stats) {
                 } else {
                     if (tokenvalue === null || tokenvalue === undefined) {
                         map.size(function(err, sizevalue) {
+<<<<<<< HEAD
                             if (!err && sizevalue !== null && sizevalue < tokenCacheSize) {
                                 map.store(oauthtoken, oauthtoken, decodedToken.payloadObj.exp);
+=======
+                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
+                                map.store(oauthtoken, oauthtoken, tokenCacheTTL);
+>>>>>>> support explicit cache ttl
                             } else {
                                 debug('too many tokens in cache; ignore storing token');
                             }
@@ -301,8 +321,18 @@ module.exports.init = function(config, logger, stats) {
                     // default to now (in seconds) + 30m if not set
                     decodedToken.exp = decodedToken.exp || +(((Date.now() / 1000) + 1800).toFixed(0));
                     //apiKeyCache[apiKey] = decodedToken;
+<<<<<<< HEAD
                     cache.store(apiKey, decodedToken,decodedToken.exp);
                     debug('api key cache store', apiKey);
+=======
+                    cache.size(function(err, sizevalue) {
+                        if (!err && sizevalue != null && sizevalue < cacheSize) {
+                            cache.store(apiKey, decodedToken, cacheKeyTTL);
+                        } else {
+                            debug('too many keys in cache; ignore storing token');
+                        }
+                    });
+>>>>>>> support explicit cache ttl
                 } else {
                     debug('api key cache skip', apiKey);
                 }
