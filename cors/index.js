@@ -1,7 +1,7 @@
 'use strict'
 var debug = require('debug')('plugin:cors');
 
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(config /*, logger, stats */) {
 
   var methods = config['cors-methods'] || 'GET, PUT, POST, DELETE, PATCH, OPTIONS';
   var maxAge = config['cors-max-age'] || '3628800';
@@ -16,7 +16,7 @@ module.exports.init = function(config, logger, stats) {
       if (origin) accessControlAllowOriginValue = origin;
           else accessControlAllowOriginValue = req.headers['origin'];
 
-	  if(req.method == 'OPTIONS') {
+	  if(req.method === 'OPTIONS') {
 	    res.setHeader('Access-Control-Allow-Origin', accessControlAllowOriginValue);
 	    res.setHeader('Access-Control-Allow-Methods', methods);
        	    res.setHeader('Access-Control-Allow-Max-Age', maxAge);

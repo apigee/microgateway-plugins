@@ -13,7 +13,7 @@
  * high load or with a large number of concurrent requests. So this plugin
  * should only be used when it is known that request/response bodies are small.
  */
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(/*config, logger, stats*/) {
   function accumulate(req, data) {
     if (!req._chunks) req._chunks = [];
     req._chunks.push(data);

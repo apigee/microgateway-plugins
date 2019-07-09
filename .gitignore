@@ -36,3 +36,16 @@ node_modules
 .idea
 .DS_Store
 env.sh
+
+#directory for troublesome tests
+test-quarantine
+
+
+.nyc_output
+dirs.txt
+log
+logging-report.txt
+quick.sh
+summary.txt
+tools
+biglog.txt

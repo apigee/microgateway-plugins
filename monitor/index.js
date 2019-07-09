@@ -4,12 +4,18 @@
  */
 
 var debug = require('debug')('plugin:monitor');
+<<<<<<< HEAD
 var path = require("path");
 const memoredpath = path.resolve(__dirname,'../../..')+'/third_party/memored/memored';
+=======
+// var path = require('path');
+const memoredpath = '../third_party/memored/index';
+>>>>>>> 7d0c3c0
 var cache = require(memoredpath);
 const lynx = require('lynx');
+const os = require('os');
 
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(config /*, logger, stats */) {
 
     var host = config.host || 'localhost';
     var port = config.port || 8125;

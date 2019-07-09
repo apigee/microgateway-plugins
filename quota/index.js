@@ -1,10 +1,16 @@
 'use strict';
 
+// QUOTA
+// module:  microgateway-plugins/quota 
+
+
 var async = require('async');
 var Quota = require('volos-quota-apigee');
 var debug = require('debug')('gateway:quota');
 var url = require('url');
-module.exports.init = function(config, logger, stats) {
+
+
+module.exports.init = function(config /*, logger, stats */) {
 
     const { product_to_proxy, proxies } = config;
     const prodsObj = {};
@@ -15,6 +21,14 @@ module.exports.init = function(config, logger, stats) {
         }
     };
 
+    var quotaManagers = {}
+
+    if (  (product_to_proxy === undefined)  || (proxies === undefined) ) {
+        //
+        debug("quota plugin did not recieve valid produc-proxy map or list of proxies")
+        return(undefined)
+    }
+
     Object.keys(config).forEach(function(productName) {
         var product = config[productName];
         if (!product.uri && !product.key && !product.secret && !product.allow && !product.interval || product.interval === "null") {
@@ -23,9 +37,9 @@ module.exports.init = function(config, logger, stats) {
             return;
         }
 
-        if(product.timeUnit === 'month') {
-            product.timeUnit === '30days';
-        };
+        if ( product.timeUnit === 'month' ) {
+            //product.timeUnit = '30days';  // this is broken - volos does not consider 30days as an option, but tries to process it anyway.
+        }
 
         const prodProxiesArr = product_to_proxy[productName];
 
@@ -52,6 +66,8 @@ module.exports.init = function(config, logger, stats) {
         config[productName].request = config.request;
         var quota = Quota.create(config[productName]);
         quotas[productName] = quota.connectMiddleware().apply(options);
+        //
+        quotaManagers[productName] = quota;
         debug('created quota for', productName);
     });
 
@@ -65,7 +81,9 @@ module.exports.init = function(config, logger, stats) {
 
         req.originalUrl = req.originalUrl || req.url; // emulate connect
         
-        let matchedPathProxy = res.proxy.base_path || url.parse(req.url).pathname || '';
+        let proxyPath = res.proxy ? res.proxy.base_path : undefined;
+        let proxyUrl = req.url ? url.parse(req.url).pathname : undefined;
+        let matchedPathProxy = proxyPath || proxyUrl || '';
         debug('matchedPathProxy',matchedPathProxy);
 
         const prodList = [];
@@ -86,7 +104,7 @@ module.exports.init = function(config, logger, stats) {
             function(productName, cb) {
                 var connectMiddleware = quotas[productName];
                 debug('applying quota for', productName);
-                connectMiddleware ? connectMiddleware(req, res, cb) : cb();
+                if ( connectMiddleware ){  connectMiddleware(req, res, cb) } else cb();
             },
             function(err) {
                 next(err);
@@ -101,11 +119,27 @@ module.exports.init = function(config, logger, stats) {
         },
 
         onrequest: function(req, res, next) {
-            if (process.env.EDGEMICRO_LOCAL) {
+            if ( process.env.EDGEMICRO_LOCAL !== undefined ) {
                 debug("MG running in local mode. Skipping Quota");
                 next();
             } else {
                 middleware(req, res, next);
+            }
+        },
+
+        shutdown: function() {
+            // look for extant timers ... for global graceful shutdown...
+            for ( var qmKey in quotaManagers ) {
+                var q = quotaManagers[qmKey];
+                if ( q.quota ) {
+                    q = q.quota;
+                }
+                if ( q.bucketTimer ) {
+                    clearInterval(q.bucketTimer)
+                }
+                if ( q.flushTimer ) {
+                    clearInterval(q.flushTimer)
+                }
             }
         }
 

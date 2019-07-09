@@ -1,8 +1,8 @@
 'use strict';
 
-var debug = require('debug')('plugin:spikearrest');
+//var debug = require('debug')('plugin:spikearrest');
 
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(config /*, logger, stats */) {
 
   var spikearrest = require('volos-spikearrest-memory').create(config);
   var middleware = spikearrest.connectMiddleware().apply();

@@ -11,6 +11,10 @@ var debug = require('debug')('gateway:test');
 var http = require('http');
 var url = require('url');
 
+
+var gateway = require('../../gateway/lib/gateway');
+
+
 var chai = require('chai');
 chai.config.includeStack = true;
 chai.config.showDiff = true;
@@ -118,7 +122,6 @@ module.exports.startServers = function startServers(config, cb) {
 };
 
 function startGateway(config, targets, cb) {
-  var gateway = require('../../gateway/lib/gateway');
   replaceVolosApigeeWithMemory(gateway, 'analytics');
 
   config.edgemicro.port = 0; // to let gateway start on a port of its choosing

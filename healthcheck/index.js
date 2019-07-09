@@ -6,11 +6,11 @@ var portastic = require('portastic')
 
 const HEALTHCHECK_URL = '/healthcheck';
 
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(config /*, logger, stats */) {
   return {
    onrequest: function(req, res, next) {
      var healthcheck_url = config['healthcheck_url'] ||  HEALTHCHECK_URL
-      if(healthcheck_url == req.url) {
+      if(healthcheck_url === req.url) {
         var statusCode = (toobusy() ? 503 : 200)
         debug(statusCode)
         var healthInfo = {
@@ -20,13 +20,13 @@ module.exports.init = function(config, logger, stats) {
           pid: process.pid
         }
         //Check for cloud foundry healthcheck
-        if(req.targetPort != '' && process.env.EDGEMICRO_DECORATOR){
+        if(req.targetPort !== '' && process.env.EDGEMICRO_DECORATOR){
           var port = req.targetPort
           portastic.test(port)
           .then(function(isOpen){
             if (isOpen){
               statusCode = 500
-              var errorDescription = 'Application is not running on specified applicaiton port: ' + port
+              var errorDescription = 'Application is not running on specified application port: ' + port
               healthInfo.decoratorError = errorDescription
               debug(errorDescription)
               debug(statusCode)

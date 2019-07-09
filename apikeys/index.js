@@ -5,7 +5,11 @@ var url = require("url");
 var rs = require("jsrsasign");
 var fs = require("fs");
 var path = require("path");
+<<<<<<< HEAD
 const memoredpath = path.resolve(__dirname,'../../..')+'/third_party/memored/memored';
+=======
+const memoredpath = '../third_party/memored/index';
+>>>>>>> 7d0c3c0
 var cache = require(memoredpath);
 var JWS = rs.jws.JWS;
 var requestLib = require("request");
@@ -14,7 +18,7 @@ var _ = require("lodash");
 const PRIVATE_JWT_VALUES = ["application_name", "client_id", "api_product_list", "iat", "exp"];
 const SUPPORTED_DOUBLE_ASTERIK_PATTERN = "**";
 const SUPPORTED_SINGLE_ASTERIK_PATTERN = "*";
-const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";
+// const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";    // ?? this has yet to be used in any module.
 
 const acceptAlg = ["RS256"];
 
@@ -39,9 +43,15 @@ module.exports.init = function(config, logger, stats) {
 		//cache api keys
         cacheKey = config.hasOwnProperty("cacheKey") ? config.cacheKey : false;
         //cache ttl
+<<<<<<< HEAD
         cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : cacheKeyTTL;
         //cache size
         cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : cacheSize;
+=======
+        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : 60000;
+        //cache size
+        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : 100;
+>>>>>>> 7d0c3c0
         //set grace period
         var gracePeriod = config.hasOwnProperty("gracePeriod") ? config.gracePeriod : 0;
         acceptField.gracePeriod = gracePeriod;
@@ -50,12 +60,13 @@ module.exports.init = function(config, logger, stats) {
         //this flag will enable check against resource paths only
         productOnly = config.hasOwnProperty("productOnly") ? config.productOnly : false;
         //if local proxy is set, ignore proxies
-        if (process.env.EDGEMICRO_LOCAL_PROXY == "1") {
+        if (process.env.EDGEMICRO_LOCAL_PROXY === "1") {
             productOnly = true;
         }        
 
         //leaving rest of the code same to ensure backward compatibility
-        if (apiKey = req.headers[apiKeyHeaderName]) {
+        apiKey = req.headers[apiKeyHeaderName]
+        if ( apiKey ) {
 			if (!keepApiKey) {
 				delete(req.headers[apiKeyHeaderName]); // don't pass this header to target
 			}
@@ -183,7 +194,7 @@ module.exports.init = function(config, logger, stats) {
     return {
 
         onrequest: function(req, res, next) {
-            if (process.env.EDGEMICRO_LOCAL == "1") {
+            if (process.env.EDGEMICRO_LOCAL === "1") {
                 debug ("MG running in local mode. Skipping OAuth");
                 next();
             } else {
@@ -279,7 +290,7 @@ const checkIfAuthorized = module.exports.checkIfAuthorized = function checkIfAut
                     } else {
                         // if(apiproxy.includes(SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN)){
                         // }
-                        matchesProxyRules = urlPath == apiproxy;
+                        matchesProxyRules = urlPath === apiproxy;
 
                     }
                 }
@@ -302,7 +313,7 @@ function getPEM(decodedToken, keys) {
     var i = 0;
     debug("jwk kid " + decodedToken.headerObj.kid);
     for (; i < keys.length; i++) {
-        if (keys.kid == decodedToken.headerObj.kid) {
+        if (keys.kid === decodedToken.headerObj.kid) {
             break;
         }
     }
@@ -310,26 +321,37 @@ function getPEM(decodedToken, keys) {
     return rs.KEYUTIL.getPEM(publickey);
 }
 
-function sendError(req, res, next, logger, stats, code, message) {
-
-    switch (code) {
-        case "invalid_request":
+function setResponseCode(res,code) {
+    switch ( code ) {
+        case 'invalid_request': {
             res.statusCode = 400;
             break;
-        case "access_denied":
+        }
+        case 'access_denied':{
             res.statusCode = 403;
             break;
-        case "invalid_token":
-        case "missing_authorization":
-        case "invalid_request":
+        }
+        case 'invalid_token':
+        case 'missing_authorization':
+        case 'invalid_authorization': {
             res.statusCode = 401;
             break;
-        case "gateway_timeout":
+        }
+        case 'gateway_timeout': {
             res.statusCode = 504;
             break;
-        default:
+        }
+        default: {
             res.statusCode = 500;
+            break;
+        }
     }
+}
+
+
+function sendError(req, res, next, logger, stats, code, message) {
+
+    setResponseCode(res,code)
 
     var response = {
         error: code,

@@ -3,19 +3,23 @@
 var debug = require('debug')('plugin:oauthv2');
 var url = require('url');
 var rs = require('jsrsasign');
+<<<<<<< HEAD
 var fs = require('fs');
 var path = require('path');
 const memoredpath = path.resolve(__dirname,'../../..')+'/third_party/memored/memored';
+=======
+const memoredpath = '../third_party/memored/index';
+>>>>>>> 7d0c3c0
 var map = require(memoredpath);
 var JWS = rs.jws.JWS;
-var requestLib = require('request');
+//var requestLib = require('request');
 var _ = require('lodash');
 
 const authHeaderRegex = /Bearer (.+)/;
 const PRIVATE_JWT_VALUES = ['application_name', 'client_id', 'api_product_list', 'iat', 'exp'];
 const SUPPORTED_DOUBLE_ASTERIK_PATTERN = "**";
 const SUPPORTED_SINGLE_ASTERIK_PATTERN = "*";
-const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";
+//const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";
 
 const acceptAlg = ['RS256'];
 
@@ -34,7 +38,7 @@ var tokenCacheTTL = 60000; //set default token cache TTL to 1 minute
 
 module.exports.init = function(config, logger, stats) {
 
-    var request = config.request ? requestLib.defaults(config.request) : requestLib;
+    //var request = config.request ? requestLib.defaults(config.request) : requestLib;
     var keys = config.jwk_keys ? JSON.parse(config.jwk_keys) : null;
 
     var middleware = function(req, res, next) {
@@ -47,16 +51,21 @@ module.exports.init = function(config, logger, stats) {
         //this flag will enable check against resource paths only
         productOnly = config.hasOwnProperty('productOnly') ? config.productOnly : false;
         //if local proxy is set, ignore proxies
-        if (process.env.EDGEMICRO_LOCAL_PROXY == "1") {
+        if (process.env.EDGEMICRO_LOCAL_PROXY === "1") {
             productOnly = true;
         }        
         //token cache settings
         tokenCache = config.hasOwnProperty('tokenCache') ? config.tokenCache : false;
         //token cache ttl
+<<<<<<< HEAD
         tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : tokenCacheTTL;
+=======
+        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : 60000;
+>>>>>>> 7d0c3c0
         //max number of tokens in the cache
         tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : tokenCacheSize;
         //
+        var header = false;
         if (!req.headers[authHeaderName]) {
             if (config.allowNoAuthorization) {
                 return next();
@@ -65,8 +74,8 @@ module.exports.init = function(config, logger, stats) {
                 return sendError(req, res, next, logger, stats, 'missing_authorization', 'Missing Authorization header');
             }
         } else {
-            var header = authHeaderRegex.exec(req.headers[authHeaderName]);
-            if (!header || header.length < 2) {
+            header = authHeaderRegex.exec(req.headers[authHeaderName]);
+            if (!(header) || (header.length < 2) ) {
                 debug('Invalid Authorization Header');
                 return sendError(req, res, next, logger, stats, 'invalid_request', 'Invalid Authorization header');
             }
@@ -101,10 +110,10 @@ module.exports.init = function(config, logger, stats) {
             }
 		}
         
-        if (tokenCache == true) {
+        if (tokenCache === true) {
             debug('token caching enabled')
             map.read(oauthtoken, function(err, tokenvalue) {
-                if (!err && tokenvalue != undefined && tokenvalue != null && tokenvalue == oauthtoken) {
+                if ( !err && (tokenvalue !== undefined) && (tokenvalue !== null) && (tokenvalue === oauthtoken) ) {
                     debug('found token in cache');
                     isValid = true;
                     if (ejectToken(decodedToken.payloadObj.exp)) {
@@ -113,13 +122,17 @@ module.exports.init = function(config, logger, stats) {
                     }
                 } else {
                     debug('token not found in cache');
-                    if (keys) {
-                        debug('using jwk');
-                        var pem = getPEM(decodedToken, keys);
-                        isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
-                    } else {
-                        debug('validating jwt');
-                        isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
+                    try {
+                        if (keys) {
+                            debug('using jwk');
+                            var pem = getPEM(decodedToken, keys);
+                            isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
+                        } else {
+                            debug('validating jwt');
+                            isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
+                        }
+                    } catch (error) {
+                        console.warn('error parsing jwt: ' + oauthtoken);
                     }
                 }
                 if (!isValid) {
@@ -131,10 +144,20 @@ module.exports.init = function(config, logger, stats) {
                         return sendError(req, res, next, logger, stats, 'invalid_token');
                     }
                 } else {
-                    if (tokenvalue == null || tokenvalue == undefined) {
+                    if (tokenvalue === null || tokenvalue === undefined) {
                         map.size(function(err, sizevalue) {
+<<<<<<< HEAD
                             if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
                                 map.store(oauthtoken, oauthtoken, tokenCacheTTL);
+=======
+<<<<<<< HEAD
+                            if (!err && sizevalue !== null && sizevalue < tokenCacheSize) {
+                                map.store(oauthtoken, oauthtoken, decodedToken.payloadObj.exp);
+=======
+                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
+                                map.store(oauthtoken, oauthtoken, tokenCacheTTL);
+>>>>>>> support explicit cache ttl
+>>>>>>> 7d0c3c0
                             } else {
                                 debug('too many tokens in cache; ignore storing token');
                             }
@@ -144,13 +167,17 @@ module.exports.init = function(config, logger, stats) {
                 }
             });
         } else {
-            if (keys) {
-                debug('using jwk');
-                var pem = getPEM(decodedToken, keys);
-                isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
-            } else {
-                debug('validating jwt');
-                isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
+            try {
+                if (keys) {
+                    debug('using jwk');
+                    var pem = getPEM(decodedToken, keys);
+                    isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
+                } else {
+                    debug('validating jwt');
+                    isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
+                }
+            } catch (error) {
+                console.warn('error parsing jwt: ' + oauthtoken);
             }
             if (!isValid) {
                 if (config.allowInvalidAuthorization) {
@@ -166,18 +193,6 @@ module.exports.init = function(config, logger, stats) {
         }
     };
 
-    return {
-
-        onrequest: function(req, res, next) {
-            if (process.env.EDGEMICRO_LOCAL == "1") {
-                debug ("MG running in local mode. Skipping OAuth");
-                next();
-            } else {
-                middleware(req, res, next);
-            }
-        }
-    };
-
     function authorize(req, res, next, logger, stats, decodedToken) {
         if (checkIfAuthorized(config, req.reqUrl.path, res.proxy, decodedToken)) {
             req.token = decodedToken;
@@ -188,6 +203,26 @@ module.exports.init = function(config, logger, stats) {
             return sendError(req, res, next, logger, stats, 'access_denied');
         }
     }
+
+    return {
+        onrequest: function(req, res, next) {
+            if (process.env.EDGEMICRO_LOCAL === "1") {
+                debug ("MG running in local mode. Skipping OAuth");
+                next();
+            } else {
+                middleware(req, res, next);
+            }
+        },
+
+        shutdown() {
+            // tests are needing shutdowns to remove services that keep programs running, etc.
+        },
+
+        // specifically a way of exporting support routines for coverage testing
+        testing: {
+            ejectToken
+        }
+    };
 
 }
 
@@ -246,7 +281,7 @@ const checkIfAuthorized = module.exports.checkIfAuthorized = function checkIfAut
                     } else {
                         // if(apiproxy.includes(SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN)){
                         // }
-                        matchesProxyRules = urlPath == apiproxy;
+                        matchesProxyRules = urlPath === apiproxy;
 
                     }
                 }
@@ -269,7 +304,7 @@ function getPEM(decodedToken, keys) {
     var i = 0;
     debug('jwk kid ' + decodedToken.headerObj.kid);
     for (; i < keys.length; i++) {
-        if (keys.kid == decodedToken.headerObj.kid) {
+        if (keys.kid === decodedToken.headerObj.kid) {
             break;
         }
     }
@@ -277,37 +312,43 @@ function getPEM(decodedToken, keys) {
     return rs.KEYUTIL.getPEM(publickey);
 }
 
-function ejectToken(expTimestamp) {
+// this should be in a separate module. This code is being copied from instance to instance.
+function ejectToken(expTimestampInSeconds) {
     var currentTimestampInSeconds = new Date().getTime() / 1000;
-    var timeDifferenceInSeconds = (expTimestamp - currentTimestampInSeconds);
+    var gracePeriod = parseInt(acceptField.gracePeriod)
+    return currentTimestampInSeconds > expTimestampInSeconds + gracePeriod
+}
 
-    if (Math.abs(timeDifferenceInSeconds) <= parseInt(acceptField.gracePeriod)) {
-        return true;
-    } else {
-        return false;
+function setResponseCode(res,code) {
+    switch ( code ) {
+        case 'invalid_request': {
+            res.statusCode = 400;
+            break;
+        }
+        case 'access_denied':{
+            res.statusCode = 403;
+            break;
+        }
+        case 'invalid_token':
+        case 'missing_authorization':
+        case 'invalid_authorization': {
+            res.statusCode = 401;
+            break;
+        }
+        case 'gateway_timeout': {
+            res.statusCode = 504;
+            break;
+        }
+        default: {
+            res.statusCode = 500;
+            break;
+        }
     }
 }
 
 function sendError(req, res, next, logger, stats, code, message) {
 
-    switch (code) {
-        case 'invalid_request':
-            res.statusCode = 400;
-            break;
-        case 'access_denied':
-            res.statusCode = 403;
-            break;
-        case 'invalid_token':
-        case 'missing_authorization':
-        case 'invalid_authorization':
-            res.statusCode = 401;
-            break;
-        case 'gateway_timeout':
-            res.statusCode = 504;
-            break;
-        default:
-            res.statusCode = 500;
-    }
+    setResponseCode(res,code);
 
     var response = {
         error: code,

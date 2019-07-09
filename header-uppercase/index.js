@@ -3,7 +3,7 @@
 var debug = require('debug')('plugin:header-uppercase');
 
 // required
-module.exports.init = function(config, logger, stats) {
+module.exports.init = function(/*config, logger, stats*/) {
 
   var counter = 0;
 

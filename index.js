@@ -21,5 +21,6 @@ module.exports = {
   apikeys: require('./apikeys'),
   oauthv2: require('./oauthv2'),
   extauth: require('./extauth'),
-  invalidHeader: require('./invalidHeader')
+  invalidHeader: require('./invalidHeader'),
+  memored: require('./third_party/memored'),
 }

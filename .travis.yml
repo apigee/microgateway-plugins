@@ -1,4 +1,13 @@
 language: node_js
 node_js:
 - '6.14'
-
+- '8'
+- '10'
+- '12'
+#jobs:
+#  include:
+#    - stage: test
+#      script: npm test
+#    -
+#      script: echo "this is done"
+#      if: TRAVIS_EVENT == 'cron'
