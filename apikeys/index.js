@@ -5,7 +5,11 @@ var url = require("url");
 var rs = require("jsrsasign");
 var fs = require("fs");
 var path = require("path");
+<<<<<<< HEAD
+const memoredpath = path.resolve(__dirname,'../../..')+'/third_party/memored/memored';
+=======
 const memoredpath = '../third_party/memored/index';
+>>>>>>> 7d0c3c0
 var cache = require(memoredpath);
 var JWS = rs.jws.JWS;
 var requestLib = require("request");
@@ -23,6 +27,8 @@ acceptField.alg = acceptAlg;
 
 var productOnly;
 var cacheKey = false;
+var cacheKeyTTL = 60000; //set default cache TTL to 1 minute
+var cacheSize = 100; //default cache size 
 
 module.exports.init = function(config, logger, stats) {
 
@@ -36,6 +42,16 @@ module.exports.init = function(config, logger, stats) {
 		var keepApiKey = config.hasOwnProperty('keep-api-key') ? config['keep-api-key'] : false;
 		//cache api keys
         cacheKey = config.hasOwnProperty("cacheKey") ? config.cacheKey : false;
+        //cache ttl
+<<<<<<< HEAD
+        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : cacheKeyTTL;
+        //cache size
+        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : cacheSize;
+=======
+        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : 60000;
+        //cache size
+        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : 100;
+>>>>>>> 7d0c3c0
         //set grace period
         var gracePeriod = config.hasOwnProperty("gracePeriod") ? config.gracePeriod : 0;
         acceptField.gracePeriod = gracePeriod;
@@ -192,7 +208,7 @@ module.exports.init = function(config, logger, stats) {
             req.token = decodedToken;
 
             var authClaims = _.omit(decodedToken, PRIVATE_JWT_VALUES);
-            req.headers["x-authorization-claims"] = new Buffer(JSON.stringify(authClaims)).toString("base64");
+            req.headers["x-authorization-claims"] = Buffer.from(JSON.stringify(authClaims)).toString("base64");
 
             if (apiKey) {
                 var cacheControl = req.headers["cache-control"] || "no-cache";
@@ -200,8 +216,13 @@ module.exports.init = function(config, logger, stats) {
                     // default to now (in seconds) + 30m if not set
                     decodedToken.exp = decodedToken.exp || +(((Date.now() / 1000) + 1800).toFixed(0));
                     //apiKeyCache[apiKey] = decodedToken;
-                    cache.store(apiKey, decodedToken);
-                    debug("api key cache store", apiKey);
+                    cache.size(function(err, sizevalue) {
+                        if (!err && sizevalue != null && sizevalue < cacheSize) {
+                            cache.store(apiKey, decodedToken, cacheKeyTTL);
+                        } else {
+                            debug('too many keys in cache; ignore storing token');
+                        }
+                    });
                 } else {
                     debug("api key cache skip", apiKey);
                 }
