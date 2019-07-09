@@ -5,11 +5,7 @@ var url = require('url');
 var rs = require('jsrsasign');
 var fs = require('fs');
 var path = require('path');
-<<<<<<< HEAD
-const memoredpath = path.resolve(__dirname,'../../..')+'/third_party/memored/memored';
-=======
 const memoredpath = '../third_party/memored/index';
->>>>>>> 7d0c3c0
 var cache = require(memoredpath);
 var map = require(memoredpath);
 var JWS = rs.jws.JWS;
@@ -35,10 +31,7 @@ map.setup({
     purgeInterval: 10000
 });
 
-var tokenCacheSize = 100; //default cache size for access tokens
-var tokenCacheTTL = 60000; //set default token cache TTL to 1 minute 
-var cacheKeyTTL = 60000; //set default apikey cache TTL to 1 minute
-var cacheSize = 100; //default cache size for api keys
+var tokenCacheSize = 100;
 
 module.exports.init = function(config, logger, stats) {
 
@@ -56,16 +49,6 @@ module.exports.init = function(config, logger, stats) {
         var apiKeyHeaderName = config.hasOwnProperty('api-key-header') ? config['api-key-header'] : 'x-api-key';
         var keepAuthHeader = config.hasOwnProperty('keep-authorization-header') ? config['keep-authorization-header'] : false;
         cacheKey = config.hasOwnProperty('cacheKey') ? config.cacheKey : false;
-        //cache ttl
-<<<<<<< HEAD
-        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : cacheKeyTTL;
-        //cache size
-        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : cacheSize;
-=======
-        cacheKeyTTL = config.hasOwnProperty("cacheKeyTTL") ? config.cacheKeyTTL : 60000;
-        //cache size
-        cacheSize = config.hasOwnProperty("cacheSize") ? config.cacheSize : 100;
->>>>>>> 7d0c3c0
         //set grace period
         var gracePeriod = config.hasOwnProperty('gracePeriod') ? config.gracePeriod : 0;
         acceptField.gracePeriod = gracePeriod;
@@ -82,14 +65,8 @@ module.exports.init = function(config, logger, stats) {
         }
         //token cache settings
         tokenCache = config.hasOwnProperty('tokenCache') ? config.tokenCache : false;
-        //token cache ttl
-<<<<<<< HEAD
-        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.tokenCacheTTL : tokenCacheTTL;
-=======
-        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : 60000;
->>>>>>> 7d0c3c0
         //max number of tokens in the cache
-        tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : tokenCacheSize;
+        tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : 100;
         //
         //support for enabling oauth or api key only
         var header = false;
@@ -229,7 +206,6 @@ module.exports.init = function(config, logger, stats) {
 
         var isValid = false;
         var oauthtoken = token && token.token ? token.token : token;
-<<<<<<< HEAD
         var decodedToken = null;
         //
         try {
@@ -240,11 +216,6 @@ module.exports.init = function(config, logger, stats) {
         }
         //
         if (tokenCache === true) {
-=======
-        var decodedToken = JWS.parse(oauthtoken);
-
-        if (tokenCache == true) {
->>>>>>> support explicit cache ttl
             debug('token caching enabled')
             map.read(oauthtoken, function(err, tokenvalue) {
                 if (!err && tokenvalue !== undefined && tokenvalue !== null && tokenvalue === oauthtoken) {
@@ -280,18 +251,8 @@ module.exports.init = function(config, logger, stats) {
                 } else {
                     if (tokenvalue === null || tokenvalue === undefined) {
                         map.size(function(err, sizevalue) {
-<<<<<<< HEAD
-                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
-                                map.store(oauthtoken, oauthtoken, tokenCacheTTL);
-=======
-<<<<<<< HEAD
                             if (!err && sizevalue !== null && sizevalue < tokenCacheSize) {
                                 map.store(oauthtoken, oauthtoken, decodedToken.payloadObj.exp);
-=======
-                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
-                                map.store(oauthtoken, oauthtoken, tokenCacheTTL);
->>>>>>> support explicit cache ttl
->>>>>>> 7d0c3c0
                             } else {
                                 debug('too many tokens in cache; ignore storing token');
                             }
@@ -332,7 +293,7 @@ module.exports.init = function(config, logger, stats) {
             req.token = decodedToken;
 
             var authClaims = _.omit(decodedToken, PRIVATE_JWT_VALUES);
-            req.headers['x-authorization-claims'] = Buffer.from(JSON.stringify(authClaims)).toString('base64');
+            req.headers['x-authorization-claims'] = new Buffer(JSON.stringify(authClaims)).toString('base64');
 
             if (apiKey) {
                 var cacheControl = req.headers['cache-control'] || 'no-cache';
@@ -340,24 +301,8 @@ module.exports.init = function(config, logger, stats) {
                     // default to now (in seconds) + 30m if not set
                     decodedToken.exp = decodedToken.exp || +(((Date.now() / 1000) + 1800).toFixed(0));
                     //apiKeyCache[apiKey] = decodedToken;
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
                     cache.store(apiKey, decodedToken,decodedToken.exp);
                     debug('api key cache store', apiKey);
-=======
->>>>>>> 7d0c3c0
-                    cache.size(function(err, sizevalue) {
-                        if (!err && sizevalue != null && sizevalue < cacheSize) {
-                            cache.store(apiKey, decodedToken, cacheKeyTTL);
-                        } else {
-                            debug('too many keys in cache; ignore storing token');
-                        }
-                    });
-<<<<<<< HEAD
-=======
->>>>>>> support explicit cache ttl
->>>>>>> 7d0c3c0
                 } else {
                     debug('api key cache skip', apiKey);
                 }

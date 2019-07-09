@@ -3,13 +3,7 @@
 var debug = require('debug')('plugin:oauthv2');
 var url = require('url');
 var rs = require('jsrsasign');
-<<<<<<< HEAD
-var fs = require('fs');
-var path = require('path');
-const memoredpath = path.resolve(__dirname,'../../..')+'/third_party/memored/memored';
-=======
 const memoredpath = '../third_party/memored/index';
->>>>>>> 7d0c3c0
 var map = require(memoredpath);
 var JWS = rs.jws.JWS;
 //var requestLib = require('request');
@@ -33,8 +27,7 @@ map.setup({
     purgeInterval: 10000
 });
 
-var tokenCacheSize = 100; //default cache size for access tokens
-var tokenCacheTTL = 60000; //set default token cache TTL to 1 minute 
+var tokenCacheSize = 100;
 
 module.exports.init = function(config, logger, stats) {
 
@@ -56,14 +49,8 @@ module.exports.init = function(config, logger, stats) {
         }        
         //token cache settings
         tokenCache = config.hasOwnProperty('tokenCache') ? config.tokenCache : false;
-        //token cache ttl
-<<<<<<< HEAD
-        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : tokenCacheTTL;
-=======
-        tokenCacheTTL = config.hasOwnProperty("tokenCacheTTL") ? config.cacheKeyTTL : 60000;
->>>>>>> 7d0c3c0
         //max number of tokens in the cache
-        tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : tokenCacheSize;
+        tokenCacheSize = config.hasOwnProperty('tokenCacheSize') ? config.tokenCacheSize : 100;
         //
         var header = false;
         if (!req.headers[authHeaderName]) {
@@ -146,18 +133,8 @@ module.exports.init = function(config, logger, stats) {
                 } else {
                     if (tokenvalue === null || tokenvalue === undefined) {
                         map.size(function(err, sizevalue) {
-<<<<<<< HEAD
-                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
-                                map.store(oauthtoken, oauthtoken, tokenCacheTTL);
-=======
-<<<<<<< HEAD
                             if (!err && sizevalue !== null && sizevalue < tokenCacheSize) {
                                 map.store(oauthtoken, oauthtoken, decodedToken.payloadObj.exp);
-=======
-                            if (!err && sizevalue != null && sizevalue < tokenCacheSize) {
-                                map.store(oauthtoken, oauthtoken, tokenCacheTTL);
->>>>>>> support explicit cache ttl
->>>>>>> 7d0c3c0
                             } else {
                                 debug('too many tokens in cache; ignore storing token');
                             }
@@ -197,7 +174,7 @@ module.exports.init = function(config, logger, stats) {
         if (checkIfAuthorized(config, req.reqUrl.path, res.proxy, decodedToken)) {
             req.token = decodedToken;
             var authClaims = _.omit(decodedToken, PRIVATE_JWT_VALUES);
-            req.headers['x-authorization-claims'] = Buffer.from(JSON.stringify(authClaims)).toString('base64');
+            req.headers['x-authorization-claims'] = new Buffer(JSON.stringify(authClaims)).toString('base64');
             next();
         } else {
             return sendError(req, res, next, logger, stats, 'access_denied');

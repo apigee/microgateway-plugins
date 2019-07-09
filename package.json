@@ -1,10 +1,6 @@
 {
   "name": "microgateway-plugins",
-<<<<<<< HEAD
-  "version": "2.5.38",
-=======
   "version": "3.0.1",
->>>>>>> 7d0c3c0
   "description": "Plugins for Apige Edge Microgateway",
   "license": "Apache-2.0",
   "main": "index.js",
@@ -37,20 +33,14 @@
     "xml2js": "^0.4.17"
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "js-yaml": "^3.13",
-=======
->>>>>>> 7d0c3c0
     "chai": "^2.3.0",
     "config": "^1.13.0",
     "js-yaml": "^3.4.2",
     "jshint-stylish": "^2.2.1",
     "jsonwebtoken": "^5.0.1",
-<<<<<<< HEAD
     "pem": "^1.14.2",
     "volos-analytics-memory": "^0.2.0",
     "volos-quota-memory": "^0.11.0"
-=======
     "mocha": "^5.2.0",
     "nyc": "^14.1.1",
     "pem": "^1.7.2",
