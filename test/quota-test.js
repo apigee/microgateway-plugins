@@ -3,6 +3,9 @@ const assert = require('assert');
 const denv = require('dotenv');
 denv.config();
 
+const coreObject = require('./microgateway-core');
+const logger = coreObject.logger;
+const stats = coreObject.stats;
 
 
 var emtProxy = () => {}
@@ -114,8 +117,6 @@ describe('quota plugin', function() {
 
   before(() => {
     //
-    var logger = {};
-    var stats = {};
 
     plugin = quota.init.apply(null, [exampleConfig, logger, stats]);
     
@@ -132,8 +133,6 @@ describe('quota plugin', function() {
 
 
   it('will not initialize without a well formed config',(done) => {
-    var logger = {};
-    var stats = {};
 
     var myplugin = quota.init.apply(null, [exampleUselessConfig, logger, stats]);
     assert(myplugin === undefined)
@@ -332,8 +331,6 @@ it('will quota limit after 3 API calls', (done) => {
 
 
   it('will use time unit as month',(done) => {
-    var logger = {};
-    var stats = {};
 
     exampleBogusConfig_timeUnit.EdgeMicroTestProduct.timeUnit = 'month';
 
@@ -347,8 +344,6 @@ it('will quota limit after 3 API calls', (done) => {
 
 
   it('it has test probe',(done) => {
-    var logger = {};
-    var stats = {};
 
     exampleBogusConfig_timeUnit.EdgeMicroTestProduct.timeUnit = 'month';
 

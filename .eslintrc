@@ -1,4 +1,5 @@
 {
+  "extends": ["eslint:recommended","google"],
   "parserOptions": {
     "ecmaVersion": 6
   },
@@ -6,10 +7,47 @@
     "node": 1
   },
   "globals": {
-    "exampleGlobalVariable": true
+    "exampleGlobalVariable": true,
+    "it": true,
+    "describe": true,
+    "beforeEach":true,
+    "afterEach":true,
+    "before":true,
+    "after":true
   },
   "rules": {
-    "eqeqeq": 1
+    "eqeqeq": 1,
+    "indent": 0,
+    "no-tabs": 0,
+    "max-len": [2, 200],
+    "semi":0,
+    "valid-jsdoc":0,
+    "comma-spacing":0,
+    "quotes":0,
+    "no-multi-spaces":0,
+    "no-trailing-spaces":0,
+    "space-before-function-paren":0,
+    "spaced-comment":0,
+    "padded-blocks":0,
+    "comma-dangle":0,
+    "keyword-spacing":0,
+    "key-spacing":0,
+    "object-curly-spacing":0,
+    "require-jsdoc":0,
+    "no-var":0,
+    "block-spacing":0,
+    "brace-style":0,
+    "quote-props":0,
+    "no-mixed-spaces-and-tabs":0,
+    "space-before-blocks":0,
+    "func-call-spacing":0,
+    "eol-last":0,
+    "camelcase":0,
+    "guard-for-in":0,
+    "no-prototype-builtins":0,
+    "arrow-parens":0,
+    "one-var":0,
+    "semi-spacing":0
   },
   "plugins": [
   ]

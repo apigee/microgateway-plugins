@@ -24,6 +24,8 @@ acceptField.alg = acceptAlg;
 var productOnly;
 var cacheKey = false;
 
+const LOG_TAG_COMP = 'apikeys';
+
 module.exports.init = function(config, logger, stats) {
 
     var request = config.request ? requestLib.defaults(config.request) : requestLib;
@@ -109,12 +111,16 @@ module.exports.init = function(config, logger, stats) {
         if (config.agentOptions) {
             if (config.agentOptions.requestCert) {
                 api_key_options.requestCert = true;
-                if (config.agentOptions.cert && config.agentOptions.key) {
-                    api_key_options.key = fs.readFileSync(path.resolve(config.agentOptions.key), "utf8");
-                    api_key_options.cert = fs.readFileSync(path.resolve(config.agentOptions.cert), "utf8");
-                    if (config.agentOptions.ca) api_key_options.ca = fs.readFileSync(path.resolve(config.agentOptions.ca), "utf8");
-                } else if (config.agentOptions.pfx) {
-                    api_key_options.pfx = fs.readFileSync(path.resolve(config.agentOptions.pfx));
+                try {
+                    if (config.agentOptions.cert && config.agentOptions.key) {
+                        api_key_options.key = fs.readFileSync(path.resolve(config.agentOptions.key), "utf8");
+                        api_key_options.cert = fs.readFileSync(path.resolve(config.agentOptions.cert), "utf8");
+                        if (config.agentOptions.ca) api_key_options.ca = fs.readFileSync(path.resolve(config.agentOptions.ca), "utf8");
+                    } else if (config.agentOptions.pfx) {
+                        api_key_options.pfx = fs.readFileSync(path.resolve(config.agentOptions.pfx));
+                    }    
+                } catch (e) {
+                    logger.consoleLog('warn', "apikeys plugin could not load key file");  // TODO: convert to logger.eventLog
                 }
                 if (config.agentOptions.rejectUnauthorized) {
                     api_key_options.rejectUnauthorized = true;
@@ -136,7 +142,7 @@ module.exports.init = function(config, logger, stats) {
             }
             if (response.statusCode !== 200) {
 				if (config.allowInvalidAuthorization) {
-                    logger.consoleLog('warn', "ignoring err");  // TODO: convert to logger.eventLog
+                    logger.eventLog({level:'warn', req: req, res: res, err:err, component:LOG_TAG_COMP }, "ignoring err in requestApiKeyJWT");
 					return next();
 				} else {
 	                debug("verify apikey access_denied");
@@ -151,20 +157,33 @@ module.exports.init = function(config, logger, stats) {
 
         var isValid = false;
         var oauthtoken = token && token.token ? token.token : token;
-        var decodedToken = JWS.parse(oauthtoken);
+        var decodedToken = {}
+        try {
+            decodedToken = JWS.parse(oauthtoken);
+        } catch(e) {
+            return sendError(req, res, next, logger, stats, "access_denied", 'apikeys plugin failed to parse token in verify');
+        }
         debug(decodedToken)
         if (keys) {
             debug("using jwk");
             var pem = getPEM(decodedToken, keys);
-            isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
+            try {
+                isValid = JWS.verifyJWT(oauthtoken, pem, acceptField);
+            } catch (error) {
+                logger.consoleLog('warn', 'error parsing jwt: ' + oauthtoken);
+            }
         } else {
             debug("validating jwt");
             debug(config.public_key)
-            isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
+            try {
+                isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
+            } catch (error) {
+                logger.consoleLog('warn', 'error parsing jwt: ' + oauthtoken);
+            }
         }
         if (!isValid) {
             if (config.allowInvalidAuthorization) {
-                logger.consoleLog('warn', "ignoring err");  // TODO: convert to logger.eventLog
+                logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, "ignoring err in verify");
                 return next();
             } else {
                 debug("invalid token");
@@ -339,7 +358,7 @@ function sendError(req, res, next, logger, stats, code, message) {
 
     debug("auth failure", res.statusCode, code, message ? message : "", req.headers, req.method, req.url);
     const err = Error('auth failure');
-    logger.eventLog({level:'error', req: req, res: res, err:err, component:'apikeys' }, "apikeys");
+    logger.eventLog({level:'error', req: req, res: res, err:err, component:LOG_TAG_COMP }, message);
 
     //opentracing
     if (process.env.EDGEMICRO_OPENTRACE) {

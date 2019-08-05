@@ -1,10 +1,11 @@
 {
   "name": "microgateway-plugins",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Plugins for Apige Edge Microgateway",
   "license": "Apache-2.0",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "test": "nyc ./node_modules/.bin/mocha -R spec"
   },
   "repository": {
@@ -35,6 +36,8 @@
   "devDependencies": {
     "chai": "^2.3.0",
     "config": "^1.13.0",
+    "eslint": "^6.1.0",
+    "eslint-config-google": "^0.13.0",
     "js-yaml": "^3.4.2",
     "jshint-stylish": "^2.2.1",
     "jsonwebtoken": "^5.0.1",

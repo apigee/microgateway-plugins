@@ -15,6 +15,8 @@ const SUPPORTED_DOUBLE_ASTERIK_PATTERN = "**";
 const SUPPORTED_SINGLE_ASTERIK_PATTERN = "*";
 //const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";
 
+const LOG_TAG_COMP = 'oauthv2';
+
 const acceptAlg = ['RS256'];
 
 var acceptField = {};
@@ -89,11 +91,11 @@ module.exports.init = function(config, logger, stats) {
 			decodedToken = JWS.parse(oauthtoken);
 		} catch (err) {
             if (config.allowInvalidAuthorization) {
-                logger.consoleLog('warn', 'ignoring err');
+                logger.eventLog({level:'warn', req: req, res: res, err: err, component:LOG_TAG_COMP }, 'ignoring err');
                 return next();
             } else {
                 debug('invalid token');
-                return sendError(req, res, next, logger, stats, 'invalid_token');
+                return sendError(req, res, next, logger, stats, 'access_denied', 'invalid_token');
             }
 		}
         
@@ -119,16 +121,16 @@ module.exports.init = function(config, logger, stats) {
                             isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
                         }
                     } catch (error) {
-                        logger.consoleLog('warn', 'error parsing jwt: ' + oauthtoken);
+                        logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, 'error parsing jwt: ' + oauthtoken);
                     }
                 }
                 if (!isValid) {
                     if (config.allowInvalidAuthorization) {
-                        logger.consoleLog('warn', 'ignoring err');
+                        logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, 'ignoring err in verify');
                         return next();
                     } else {
                         debug('invalid token');
-                        return sendError(req, res, next, logger, stats, 'invalid_token');
+                        return sendError(req, res, next, logger, stats,'access_denied', 'invalid_token');
                     }
                 } else {
                     if (tokenvalue === null || tokenvalue === undefined) {
@@ -154,17 +156,15 @@ module.exports.init = function(config, logger, stats) {
                     isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
                 }
             } catch (error) {
-                // TODO: convert to logger.eventLog
-                logger.consoleLog('warn', 'error parsing jwt: ' + oauthtoken);
+                logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, 'error parsing jwt: ' + oauthtoken);
             }
             if (!isValid) {
                 if (config.allowInvalidAuthorization) {
-                    // TODO: convert to logger.eventLog
-                    logger.consoleLog('warn', 'ignoring err');
+                    logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, 'ignoring err in verify');
                     return next();
                 } else {
                     debug('invalid token');
-                    return sendError(req, res, next, logger, stats, 'invalid_token');
+                    return sendError(req, res, next, logger, stats, 'access_denied', 'invalid_token');
                 }
             } else {
                 authorize(req, res, next, logger, stats, decodedToken.payloadObj);
@@ -179,7 +179,7 @@ module.exports.init = function(config, logger, stats) {
             req.headers['x-authorization-claims'] = new Buffer(JSON.stringify(authClaims)).toString('base64');
             next();
         } else {
-            return sendError(req, res, next, logger, stats, 'access_denied');
+            return sendError(req, res, next, logger, stats, 'access_denied', 'access_denied');
         }
     }
 
@@ -333,9 +333,9 @@ function sendError(req, res, next, logger, stats, code, message) {
         error: code,
         error_description: message
     };
-
+    const err = Error(message)
     debug('auth failure', res.statusCode, code, message ? message : '', req.headers, req.method, req.url);
-    logger.eventLog({level:'error', req: req, res: res, err:err, component:'oauthv2' }, 'oauthv2');
+    logger.eventLog({level:'error', req: req, res: res, err:err, component:LOG_TAG_COMP }, message);
 
     //opentracing
     if (process.env.EDGEMICRO_OPENTRACE) {

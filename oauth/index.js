@@ -18,6 +18,8 @@ const SUPPORTED_DOUBLE_ASTERIK_PATTERN = "**";
 const SUPPORTED_SINGLE_ASTERIK_PATTERN = "*";
 // const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";
 
+const LOG_TAG_COMP = 'oauth';
+
 const acceptAlg = ['RS256'];
 
 var acceptField = {};
@@ -237,16 +239,16 @@ module.exports.init = function(config, logger, stats) {
                             isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
                         }                            
                     } catch (error) {
-                        logger.consoleLog('warn', 'error parsing jwt: ' + oauthtoken);
+                        logger.eventLog({level:'warn', req: req, res: res, err:err, component:LOG_TAG_COMP }, 'error parsing jwt: ' + oauthtoken);
                     }
                 }
                 if (!isValid) {
                     if (config.allowInvalidAuthorization) {
-                        logger.consoleLog('warn', 'ignoring err')
+                        logger.eventLog({level:'warn', req: req, res: res, err:err, component:LOG_TAG_COMP }, 'ignoring err in verify');
                         return next();
                     } else {
                         debug('invalid token');
-                        return sendError(req, res, next, logger, stats, 'invalid_token');
+                        return sendError(req, res, next, logger, stats, 'invalid_token', 'invalid_token');
                     }
                 } else {
                     if (tokenvalue === null || tokenvalue === undefined) {
@@ -272,15 +274,15 @@ module.exports.init = function(config, logger, stats) {
                     isValid = JWS.verifyJWT(oauthtoken, config.public_key, acceptField);
                 }
             } catch (error) {
-                logger.consoleLog('warn', 'error parsing jwt: ' + oauthtoken);
+                logger.eventLog({level:'warn', req: req, res: res, err:error, component:LOG_TAG_COMP }, 'error parsing jwt: ' + oauthtoken);
             }
             if (!isValid) {
                 if (config.allowInvalidAuthorization) {
-                    logger.consoleLog('warn', 'ignoring err');
+                    logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, 'ignoring err');
                     return next();
                 } else {
                     debug('invalid token');
-                    return sendError(req, res, next, logger, stats, 'invalid_token');
+                    return sendError(req, res, next, logger, stats, 'invalid_token', 'invalid_token');
                 }
             } else {
                 authorize(req, res, next, logger, stats, decodedToken.payloadObj, apiKey);
@@ -309,7 +311,7 @@ module.exports.init = function(config, logger, stats) {
             }
             next();
         } else {
-            return sendError(req, res, next, logger, stats, 'access_denied');
+            return sendError(req, res, next, logger, stats, 'access_denied','access_denied');
         }
     }
 
@@ -470,15 +472,7 @@ function sendError(req, res, next, logger, stats, code, message) {
     };
     const err = Error(message);
     debug('auth failure', res.statusCode, code, message ? message : '', req.headers, req.method, req.url);
-    if ( logger && logger.error && (typeof logger.error === 'function') ) {
-        logger.eventLog({
-            level:'error',
-            req: req,
-            res: res,
-            err: err,
-            component:'oauth'
-        }, 'oauth');
-    }
+    logger.eventLog({ level:'error', req: req, res: res, err: err,component:'oauth'}, message);
 
     //opentracing
     if (process.env.EDGEMICRO_OPENTRACE) {
@@ -493,23 +487,20 @@ function sendError(req, res, next, logger, stats, code, message) {
         try {
             res.setHeader('content-type', 'application/json');
         } catch (e) {
-            // TODO: convert to logger.eventLog
-            logger.consoleLog('warn', "oath response object lacks setHeader");
+            logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, "ouath response object lacks setHeader");
         }
     }
 
     try {
         res.end(JSON.stringify(response));
     } catch (e) {
-        // TODO: convert to logger.eventLog
-        logger.consoleLog('warn', "oath response object is not supplied by runtime");
+        logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, "ouath response object is not supplied by runtime");
     }
     
     try {
         stats.incrementStatusCount(res.statusCode);
     } catch (e) {
-        // TODO: convert to logger.eventLog
-        logger.consoleLog('warn', "oath stats object is not supplied by runtime");
+        logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, "ouath stats object is not supplied by runtime");
     }
     
     next(code, message);
