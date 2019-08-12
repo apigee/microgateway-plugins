@@ -258,23 +258,20 @@ const checkIfAuthorized = module.exports.checkIfAuthorized = function checkIfAut
                 if (apiproxy.endsWith("/") && !urlPath.endsWith("/")) {
                     urlPath = urlPath + "/";
                 }
-
+                let regex = apiproxy;
                 if (apiproxy.includes(SUPPORTED_DOUBLE_ASTERISK_PATTERN)) {
-                    const regex = apiproxy.replace(/\*\*/gi, ".*")
-                    matchesProxyRules = urlPath.match(regex)
+                    regex = regex.replace(/\*\*/gi, ".+");
+                }
+                if (apiproxy.includes(SUPPORTED_SINGLE_ASTERISK_PATTERN)) {
+                    regex = regex.replace(/\*/gi, "[^/]+");
+                }
+                if (regex !== apiproxy) {
+                    regex = "^" + regex + "$";
+                    matchesProxyRules = urlPath.match(regex) !== null;
                 } else {
-                    if (apiproxy.includes(SUPPORTED_SINGLE_ASTERISK_PATTERN)) {
-                        const regex = apiproxy.replace(/\*/gi, "[^/]+");
-                        matchesProxyRules = urlPath.match(regex)
-                    } else {
-                        // if(apiproxy.includes(SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN)){
-                        // }
-                        matchesProxyRules = urlPath === apiproxy;
-
-                    }
+                    matchesProxyRules = urlPath === apiproxy;
                 }
             })
-
         } else {
             matchesProxyRules = true
         }
