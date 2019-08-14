@@ -1,13 +1,14 @@
 const accumulateRequest = require('../accumulate-request/index');
 const assert = require('assert');
+const coreObject = require('./microgateway-core');
+const logger = coreObject.logger;
+const stats = coreObject.stats;
 
 describe('accumulate request plugin', () => {
   var plugin = null;
 
   beforeEach(() => {
     var config = {};
-    var logger = {};
-    var stats = {};
 
     plugin = accumulateRequest.init.apply(null, [config, logger, stats]);
   });

@@ -13,6 +13,8 @@ const acceptAlg = ['RS256'];
 
 var acceptField = {};
 acceptField.alg = acceptAlg;
+const CONSOLE_LOG_TAG_COMP = 'microgateway-plugins extauth';
+const LOG_TAG_COMP = 'extauth';
 
 module.exports.init = function(config, logger, stats) {
 
@@ -35,18 +37,22 @@ module.exports.init = function(config, logger, stats) {
         acceptField.iss[0] = iss;
     }
 
-    request({
+    request({  // The middleware is supposed to be called much later
         url: publickey_url,
         method: 'GET'
     }, function(err, response, body) {
         if (err) {
             debug('publickey gateway timeout');
-            logger.consoleLog('log', err);  // TODO: convert to logger.eventLog
+            logger.consoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, err);
         } else {
             debug("loaded public keys");
             if (keyType === 'jwk') {
                 debug("keyType is jwk");
-                publickeys = JSON.parse(body);
+                try {
+                    publickeys = JSON.parse(body);
+                } catch(e) {
+                    logger.consoleLog('log', e.message );  // TODO: convert to logger.eventLog
+                }                
             } else {
                 //the body should contain a single pem
                 publickeys = body;
@@ -76,10 +82,18 @@ module.exports.init = function(config, logger, stats) {
         if (exp) {
             debug("JWT Expiry enabled");
             acceptField.verifyAt = rs.KJUR.jws.IntDate.getNow();
-            isValid = rs.jws.JWS.verifyJWT(payload, pem, acceptField);
+            try {
+                isValid = rs.jws.JWS.verifyJWT(payload, pem, acceptField);
+            } catch(e) {
+                logger.consoleLog('log', e.message );  // TODO: convert to logger.eventLog
+            }
         } else {
             debug("JWT Expiry disabled");
-            isValid = rs.jws.JWS.verify(payload, pem, acceptAlg);
+            try {
+                isValid = rs.jws.JWS.verify(payload, pem, acceptAlg);
+            } catch(e) {
+                logger.consoleLog('log', e.message );  // TODO: convert to logger.eventLog
+            }
         }
         return isValid;
     }
@@ -96,7 +110,7 @@ module.exports.init = function(config, logger, stats) {
                     delete(req.headers['authorization']);
                     delete(req.headers['x-api-key']);
                     if (sendErr) {
-                        return sendError(req, res, next, logger, stats, 'missing_authorization');
+                        return sendError(req, res, next, logger, stats, 'access_denied', 'missing_authorization');
                     }
                 } else {
                     var jwtdecode = JWS.parse(jwtpayload[1]);
@@ -119,7 +133,7 @@ module.exports.init = function(config, logger, stats) {
                                 delete(req.headers['authorization']);
                                 delete(req.headers['x-api-key']);
                                 if (sendErr) {
-                                    return sendError(req, res, next, logger, stats, 'invalid_token');
+                                    return sendError(req, res, next, logger, stats, 'access_denied','invalid_token');
                                 }                                
                             }
                         } else if (!kid && keyType === 'jwk') {
@@ -127,7 +141,7 @@ module.exports.init = function(config, logger, stats) {
                             delete(req.headers['authorization']);
                             delete(req.headers['x-api-key']);
                             if (sendErr) {
-                                return sendError(req, res, next, logger, stats, 'invalid_token');
+                                return sendError(req, res, next, logger, stats, 'access_denied','invalid_token');
                             }
                         } else {
                             var jwk = getJWK(kid);
@@ -136,7 +150,7 @@ module.exports.init = function(config, logger, stats) {
                                 delete(req.headers['authorization']);
                                 delete(req.headers['x-api-key']);
                                 if (sendErr) {
-                                    return sendError(req, res, next, logger, stats, 'invalid_authorization');
+                                    return sendError(req, res, next, logger, stats, 'access_denied','invalid_authorization');
                                 }                                
                             } else {
                                 debug("Found JWK");
@@ -157,7 +171,7 @@ module.exports.init = function(config, logger, stats) {
                                     delete(req.headers['authorization']);
                                     delete(req.headers['x-api-key']);
                                     if (sendErr) {
-                                        return sendError(req, res, next, logger, stats, 'access_denied');
+                                        return sendError(req, res, next, logger, stats, 'access_denied', 'JWT is invalid');
                                     }                                    
                                 }
                             }
@@ -167,7 +181,7 @@ module.exports.init = function(config, logger, stats) {
                         delete(req.headers['authorization']);
                         delete(req.headers['x-api-key']);
                         if (sendErr) {
-                            return sendError(req, res, next, logger, stats, 'missing_authorization');
+                            return sendError(req, res, next, logger, stats,'access_denied', 'missing_authorization');
                         }
                     }
                 }
@@ -176,7 +190,7 @@ module.exports.init = function(config, logger, stats) {
                 delete(req.headers['authorization']);
                 delete(req.headers['x-api-key']);
                 if (sendErr) {
-                    return sendError(req, res, next, logger, stats, 'invalid_authorization');
+                    return sendError(req, res, next, logger, stats,'access_denied', 'invalid_authorization');
                 }
             }
             next();
@@ -220,9 +234,9 @@ function sendError(req, res, next, logger, stats, code, message) {
         error: code,
         error_description: message
     };
-    let err = Error(message)
+    const err = Error(message)
     debug('auth failure', res.statusCode, code, message ? message : '', req.headers, req.method, req.url);
-    logger.eventLog({level:'error', req: req, res: res, err:err, component:'extauth' }, 'extauth');
+    logger.eventLog({level:'error', req: req, res: res, err:err, component:LOG_TAG_COMP }, message);
 
     //opentracing
     if (process.env.EDGEMICRO_OPENTRACE) {
