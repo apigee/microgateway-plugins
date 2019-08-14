@@ -12,6 +12,7 @@ const port = process.env.PORT || 8000;
 const Eureka = require('eureka-js-client').Eureka;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway-plugins eurekaclient';
+const LOG_TAG_COMP = 'eurekaclient';
 
 module.exports.init = function (config , logger /*,  stats */) {
 
@@ -89,7 +90,7 @@ module.exports.init = function (config , logger /*,  stats */) {
           req.targetSecure = false;
         }        
       } else {
-        logger.consoleLog('warn', {component: CONSOLE_LOG_TAG_COMP}, "Target endpoint from Eureka not found"); // TODO: convert to logger.eventLog
+        logger.eventLog({level:'warn', req: req, res: res, err:null, component:LOG_TAG_COMP }, "Target endpoint from Eureka not found");
       }
       next();
     }   
