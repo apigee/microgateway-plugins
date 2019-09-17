@@ -42,7 +42,6 @@ test-quarantine
 
 
 .nyc_output
-dirs.txt
 log
 logging-report.txt
 quick.sh
