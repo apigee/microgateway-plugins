@@ -95,15 +95,15 @@ module.exports.init = function(config, logger, stats) {
         }
 
         //leaving rest of the code same to ensure backward compatibility
-        if (!(req.headers[authHeaderName]) || config.allowAPIKeyOnly) {
-            apiKey = req.headers[apiKeyHeaderName]
-            if ( apiKey ) {
+        if (!(req.headers[authHeaderName]) || config.allowAPIKeyOnly) {  // if an authheader not present or if proceeding with only API Key is allowed
+            apiKey = req.headers[apiKeyHeaderName]                      // See if the api key value can be unloaded from the header
+            if ( apiKey ) {                                             // there is an API key, so use it to get a token
                 exchangeApiKeyForToken(req, res, next, config, logger, stats, middleware, apiKey);
-            } else if (req.reqUrl && req.reqUrl.query && (apiKey = req.reqUrl.query[apiKeyHeaderName])) {
-                exchangeApiKeyForToken(req, res, next, config, logger, stats, middleware, apiKey);
-            } else if (config.allowNoAuthorization) {
+            } else if (req.reqUrl && req.reqUrl.query && (apiKey = req.reqUrl.query[apiKeyHeaderName])) {  // check that the apikey has been sent in the body of a POST. 
+                exchangeApiKeyForToken(req, res, next, config, logger, stats, middleware, apiKey);          // if so, then go get a token
+            } else if (config.allowNoAuthorization) {                                                       // bypassing is OK
                 return next();
-            } else {
+            } else {                                                                                        // otherwise report a problem.
                 debug('missing_authorization');
                 return sendError(req, res, next, logger, stats, 'missing_authorization', 'Missing Authorization header');
             }
