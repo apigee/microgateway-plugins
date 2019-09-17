@@ -65,7 +65,7 @@ const APPEND_PATTERN = '/index.js'
 var dirList = process.argv[2];
 
 if ( dirList == undefined ) {
-    dirList = fs.readFileSync("dirs.txt").toString()
+    dirList = fs.readFileSync(__dirname + "/dirs.txt").toString()
     dirList = dirList.trim().split('\n')
     dirList = dirList.map(dirname => {
         //console.log(`../${dirname}${APPEND_PATTERN}`)
