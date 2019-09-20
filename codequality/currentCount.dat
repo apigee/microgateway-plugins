@@ -1,5 +1,5 @@
 {
-  "previous_error_count": 12,
+  "error_count": 12,
   "by_file": {
     "../apikeys/index.js": 2,
     "../cloud-foundry-route-service/index.js": 3,

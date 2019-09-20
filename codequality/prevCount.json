@@ -1,0 +1,32 @@
+{
+    "microgateway-config@3.0.5" : {
+        "error_count": 6,
+        "by_file": {  },
+        "quality": 6,
+        "syntax": 0
+    },
+    "microgateway@3.0.7" : {
+        "error_count": 22,
+        "by_file": {  },
+        "quality": 22,
+        "syntax": 0
+    },
+    "microgateway-core@3.0.5" : {
+        "error_count": 28,
+        "by_file": {  },
+        "quality": 12,
+        "syntax": 16
+    },
+    "microgateway-plugins@3.0.8" : {
+        "error_count": 12,
+        "by_file": {
+            "../apikeys/index.js": 2,
+            "../cloud-foundry-route-service/index.js": 3,
+            "../extauth/index.js": 2,
+            "../oauth/index.js": 3,
+            "../oauthv2/index.js": 2
+        },
+        "quality": 10,
+        "syntax": 4
+    }
+}

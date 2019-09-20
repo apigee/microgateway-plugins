@@ -6,14 +6,29 @@ const fs = require('fs')
 const colors = require('colors')
 
 
+var prevQTag = process.argv[2]
+if ( prevQTag === undefined ) {
+    console.log("tag parameter must be supplied")
+    process.exit(1)
+}
 
-var gPrevQual = JSON.parse(fs.readFileSync('prevCount.dat','ascii').toString())
+
+var gPrevQualMap = JSON.parse(fs.readFileSync('prevCount.json','ascii').toString())
 var gCurrentQual = {
-    "previous_error_count" : 0,
+    "error_count" : 0,
     "by_file" : {},
     "quality" : 0,
     "syntax" : 0
 }
+
+
+var gPrevQual = gPrevQualMap[prevQTag]
+
+if ( gPrevQual == undefined ) {
+    console.log('the map of previous qualities does not include the tag')
+    process.exit(1)
+}
+
 
 
 async function getQuality(dir) {
@@ -61,11 +76,12 @@ function classifyError(qObject,line) {
 
 const APPEND_PATTERN = '/index.js'
 
+
 // 
-var dirList = process.argv[2];
+var dirList = undefined;
 
 if ( dirList == undefined ) {
-    dirList = fs.readFileSync(__dirname + "/dirs.txt").toString()
+    dirList = fs.readFileSync("dirs.txt").toString()
     dirList = dirList.trim().split('\n')
     dirList = dirList.map(dirname => {
         //console.log(`../${dirname}${APPEND_PATTERN}`)
@@ -105,10 +121,8 @@ if ( dirList !== undefined ) {
                     counterLine = line
                     //console.log(counterLine)
                 } else if ( line.length > 0 ) {
-                    //
                     classifyError(gCurrentQual,line)
                 }
-                
                 //
             } while ( lines.length > 0 )
             //
@@ -122,18 +136,18 @@ if ( dirList !== undefined ) {
         //
         // Code quality rerport
         console.log("\n\n" + colors.underline(colors.blue.bold("CODE QUALITY REPORT") + " for modules in " + __dirname ) + '\n')
-        var countDiff = totalErrors - gPrevQual.previous_error_count
+        var countDiff = totalErrors - gPrevQual.error_count
         console.log(colors.bold('Error Change:') 
                 + ( countDiff > 0 ? colors.red( ` ${countDiff},  ` )  :  colors.green( ` ${countDiff},  ` )  )
                 + colors.bold('Current: ') 
                 +  `${totalErrors},  ` 
                 + colors.bold('Previous: ') 
-                +  `${gPrevQual.previous_error_count}`)
+                +  `${gPrevQual.error_count}`)
         console.log(reportFileCounts)
         //
 
         // Code quality data
-        gCurrentQual.previous_error_count = totalErrors;
+        gCurrentQual.error_count = totalErrors;
         gCurrentQual.by_file = byFile;
         console.dir(gCurrentQual,{ color: true, depth: 2})
         console.log('\n')

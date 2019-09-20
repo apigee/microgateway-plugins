@@ -7,6 +7,6 @@ if ! [[ $nodever =~ 'v6.' ]]; then
         npm install -g jshint
     fi
     pushd codequality
-    node diffErrors.js
+    bash runquality.sh
     popd
 fi
