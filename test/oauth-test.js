@@ -25,7 +25,6 @@ var [slash, slashstar, slashstarstar, slashstarstar2 ] = [...testConfig()];
       slash.product_to_api_resource[apiName] = ["/"];
       slashstar.product_to_api_resource[apiName] = ["/*"];
       slashstarstar.product_to_api_resource[apiName] = ["/**"];
-      slashstarstar2.product_to_api_resource[apiName] = ["/*/2/**"];
 
 var oauthConfiigDefaults = {
   "authorization-header" : "authorization",
@@ -264,28 +263,6 @@ describe('oauth plugin', function() {
 
   })
 
-   // check for /*/2/** resource path.
-
-  it('checkIfAuthorized for  /*/2/**  ', function (done) {
-    var contains;
-    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}`, proxy, token);  
-    assert(!contains)
-    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/`, proxy, token);
-    assert(!contains)
-    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1`, proxy, token);
-    assert(!contains)
-    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/`, proxy, token);
-    assert(!contains)
-    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/2`, proxy, token);
-    assert(!contains)
-    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/2/`, proxy, token);
-    assert(contains)
-    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/2/3/`, proxy, token);
-    assert(contains)
-    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/a/2/3/`, proxy, token);
-    assert(!contains)
-    done()
-  })
 
   // should be identical for these tests
   var modules = { oauth, oauthv2 }
