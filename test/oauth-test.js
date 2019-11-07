@@ -9,6 +9,24 @@ const coreObject = require('./microgateway-core');
 const logger = coreObject.logger;
 const stats = coreObject.stats;
 
+const apiProd = 'edgemicro_weather';
+const apiName = 'weather';
+const apiHost = 'https://peterherz-eval-test.apigee.net/';
+const proxy = { name: apiProd, base_path: '/v1/weatheer' }
+const token = { api_product_list: [apiName] }
+
+function* testConfig() {
+    let i =0; while ( i<4 ) {  i++; yield {  
+      "verify_api_key_url": `${apiHost}edgemicro-auth/verifyApiKey`,
+      "product_to_proxy": [apiProd],
+      "product_to_api_resource": {} 
+}}}
+var [slash, slashstar, slashstarstar, slashstarstar2 ] = [...testConfig()];
+      slash.product_to_api_resource[apiName] = ["/"];
+      slashstar.product_to_api_resource[apiName] = ["/*"];
+      slashstarstar.product_to_api_resource[apiName] = ["/**"];
+      slashstarstar2.product_to_api_resource[apiName] = ["/*/2/**"];
+
 var oauthConfiigDefaults = {
   "authorization-header" : "authorization",
   "api-key-header" : 'x-api-key',
@@ -24,7 +42,6 @@ var oauthConfiigDefaults = {
   "jwk_keys" : undefined,
   "request" : undefined
 }
-
 
 var default_onrequest_cb = (err) => {
     assert.ok(!(err instanceof Error));
@@ -66,7 +83,6 @@ describe('oauth plugin', function() {
     process.env.EDGEMICRO_OPENTRACE = false
     //
   });
-
 
   after((done) => {
     if ( plugin ) plugin.shutdown();
@@ -176,6 +192,99 @@ describe('oauth plugin', function() {
       done()
     }
 
+  })
+
+  // check for / resource path.
+
+  it('checkIfAuthorized for /', function (done) {
+    var contains;
+    contains = oauth.checkIfAuthorized(slash, `${proxy.base_path}`, proxy, token);  
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slash, `${proxy.base_path}/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slash, `${proxy.base_path}/1`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slash, `${proxy.base_path}/1/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slash, `${proxy.base_path}/1/2`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slash, `${proxy.base_path}/1/2/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slash, `${proxy.base_path}/1/2/3/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slash, `${proxy.base_path}/1/a/2/3/`, proxy, token);
+    assert(contains)
+    done()
+  })
+
+   // check for /* resource path.
+
+  it('checkIfAuthorized for /*', function (done) {
+    var contains;
+     contains = oauth.checkIfAuthorized(slashstar, `${proxy.base_path}`, proxy, token);  
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstar, `${proxy.base_path}/`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstar, `${proxy.base_path}/1`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstar, `${proxy.base_path}/1/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstar, `${proxy.base_path}/1/2`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstar, `${proxy.base_path}/1/2/`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstar, `${proxy.base_path}/1/2/3/`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstar, `${proxy.base_path}/1/a/2/3/`, proxy, token);
+    assert(!contains)
+    done()
+  })
+  
+   // check for /** resource path.
+
+  it('checkIfAuthorized for /**', function (done) {
+    var contains;
+   contains = oauth.checkIfAuthorized(slashstarstar, `${proxy.base_path}`, proxy, token);  
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstarstar, `${proxy.base_path}/`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstarstar, `${proxy.base_path}/1`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstarstar, `${proxy.base_path}/1/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstarstar, `${proxy.base_path}/1/2`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstarstar, `${proxy.base_path}/1/2/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstarstar, `${proxy.base_path}/1/2/3/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstarstar, `${proxy.base_path}/1/a/2/3/`, proxy, token);
+    assert(contains)
+    done()
+
+  })
+
+   // check for /*/2/** resource path.
+
+  it('checkIfAuthorized for  /*/2/**  ', function (done) {
+    var contains;
+    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}`, proxy, token);  
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/2`, proxy, token);
+    assert(!contains)
+    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/2/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/2/3/`, proxy, token);
+    assert(contains)
+    contains = oauth.checkIfAuthorized(slashstarstar2, `${proxy.base_path}/1/a/2/3/`, proxy, token);
+    assert(!contains)
+    done()
   })
 
   // should be identical for these tests

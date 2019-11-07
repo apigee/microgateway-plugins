@@ -12,8 +12,8 @@ var requestLib = require("request");
 var _ = require("lodash");
 
 const PRIVATE_JWT_VALUES = ["application_name", "client_id", "api_product_list", "iat", "exp"];
-const SUPPORTED_DOUBLE_ASTERIK_PATTERN = "**";
-const SUPPORTED_SINGLE_ASTERIK_PATTERN = "*";
+const SUPPORTED_DOUBLE_ASTERISK_PATTERN = "**";
+const SUPPORTED_SINGLE_ASTERISK_PATTERN = "*";
 // const SUPPORTED_SINGLE_FORWARD_SLASH_PATTERN = "/";    // ?? this has yet to be used in any module.
 
 const acceptAlg = ["RS256"];
@@ -287,11 +287,11 @@ const checkIfAuthorized = module.exports.checkIfAuthorized = function checkIfAut
                     urlPath = urlPath + "/";
                 }
 
-                if (apiproxy.includes(SUPPORTED_DOUBLE_ASTERIK_PATTERN)) {
+                if (apiproxy.includes(SUPPORTED_DOUBLE_ASTERISK_PATTERN)) {
                     const regex = apiproxy.replace(/\*\*/gi, ".*")
                     matchesProxyRules = urlPath.match(regex)
                 } else {
-                    if (apiproxy.includes(SUPPORTED_SINGLE_ASTERIK_PATTERN)) {
+                    if (apiproxy.includes(SUPPORTED_SINGLE_ASTERISK_PATTERN)) {
                         const regex = apiproxy.replace(/\*/gi, "[^/]+");
                         matchesProxyRules = urlPath.match(regex)
                     } else {
