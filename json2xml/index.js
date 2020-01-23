@@ -134,11 +134,11 @@ module.exports.init = function (/*config, logger, stats*/) {
 					//the target server.
 
 					//set request content type.
-					req.setHeader('Content-Type', 'application/xml');
+					req.headers['Content-Type'] = 'application/xml';
 					next(null, js2xmlparser.parse("Root",JSON.parse(content)));
 				} else if (requestXML) {
 					//set request content type.
-					req.setHeader('Content-Type', 'application/json');
+					req.headers['Content-Type'] = 'application/json';
 					parseString(content.toString(), function(err, js){
 						if (err) next (err);
 						next(null, JSON.stringify(js));
