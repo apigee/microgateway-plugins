@@ -1,9 +1,9 @@
-#Sample Plugin - AccessControl
+# Sample Plugin - AccessControl
 
-##Overview
+## Overview
 This plugin provides IP filtering to Edge Microgateway. With this plugin, users can whitelist and/or blacklist IP Addresses.
 
-##Enable the plugin
+## Enable the plugin
 Include the plugin the in plugin sequence of {org}-{env}-config.yaml file:
 ```
   plugins:
@@ -12,7 +12,7 @@ Include the plugin the in plugin sequence of {org}-{env}-config.yaml file:
       - accesscontrol
 ```
 
-##Configure the plugin
+## Configure the plugin
 The plugin configuration has three parts:
 * (instance) Defining the microgateway instance. This registers microgateway with Eureka
 * (eureka) Provide the endpoint details to where Eureka is hosted
