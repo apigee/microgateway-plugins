@@ -124,7 +124,7 @@ module.exports.init = function(config, logger, stats) {
                                 if (!keepAuthHeader) {
                                     delete(req.headers['authorization']);
                                 }
-                                if (!sendErr) {
+                                if (sendErr) {
                                     //if this plugin is not sending errors, assume MG is not in local mode
                                     req.headers['x-api-key'] = jwtdecode.payloadObj[client_id];
                                 }
@@ -162,7 +162,7 @@ module.exports.init = function(config, logger, stats) {
                                     if (!keepAuthHeader) {
                                         delete(req.headers['authorization']);
                                     }
-                                    if (!sendErr) {
+                                    if (sendErr) {
                                         //if this plugin is not sending errors, assume MG is not in local mode
                                         req.headers['x-api-key'] = jwtdecode.payloadObj[client_id];
                                     }
