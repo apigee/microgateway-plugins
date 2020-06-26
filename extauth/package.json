@@ -6,7 +6,7 @@
     "author": "Nandan Sridhar <nandanks@gmail.com>",
     "license": "Apache-2.0",
     "dependencies": {
-      "jsrsasign": "^7.2.0",
+      "jsrsasign": "^8.0.20",
       "request": "^2.81.0",
       "debug": "^2.2.0"
     },
