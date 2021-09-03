@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/apigee/microgateway-plugins.svg?branch=master)](https://travis-ci.org/apigee/microgateway-plugins)
-
 # Plugins
 
 ## Overview
