@@ -30,6 +30,8 @@ module.exports.init = function(config, logger, stats) {
     var sendErr = config.hasOwnProperty("sendErr") ? config.sendErr : true;
     //preserve or delete the auth header
     var keepAuthHeader = config.hasOwnProperty('keep-authorization-header') ? config['keep-authorization-header'] : false;
+    //get public key from config
+    var public_keys = config.public_keys? config['public_keys'] : null;
 
     if (iss) {
         debug("Issuer " + iss);
@@ -37,28 +39,19 @@ module.exports.init = function(config, logger, stats) {
         acceptField.iss[0] = iss;
     }
 
-    request({  // The middleware is supposed to be called much later
-        url: publickey_url,
-        method: 'GET'
-    }, function(err, response, body) {
-        if (err) {
-            debug('publickey gateway timeout');
-            logger.consoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, err);
-        } else {
-            debug("loaded public keys");
-            if (keyType === 'jwk') {
-                debug("keyType is jwk");
-                try {
-                    publickeys = JSON.parse(body);
-                } catch(e) {
-                    logger.consoleLog('log', {component: CONSOLE_LOG_TAG_COMP}, e.message );
-                }                
-            } else {
-                //the body should contain a single pem
-                publickeys = body;
+    if (public_keys) {
+        if (keyType === 'jwk') {
+            debug("keyType is jwk");
+            try {
+                publickeys = JSON.parse(public_keys);
+            } catch(e) {
+                logger.consoleLog('log', {component: CONSOLE_LOG_TAG_COMP}, e.message );
             }
+        } else {
+            //the body should contain a single pem
+            publickeys = public_keys;
         }
-    });
+    }
 
     function getJWK(kid) {
         if (publickeys.keys && publickeys.keys.constructor === Array) {
@@ -72,6 +65,9 @@ module.exports.init = function(config, logger, stats) {
         } else if (publickeys[kid]) { //handle cases like https://www.googleapis.com/oauth2/v1/certs
             return publickeys[kid];
         } else { //if the publickeys url does not return arrays, then use the only public key
+            if (keyType === 'jwk' && !public_keys.keys) {
+                return null;
+            }
             debug("returning default public key");
             return publickeys;
         }
