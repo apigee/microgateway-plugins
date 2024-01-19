@@ -18,7 +18,7 @@
     "dotenv": "^8.0.0",
     "eureka-js-client": "^4.3.0",
     "js2xmlparser": "^2.0.2",
-    "jsrsasign": "^10.5.25",
+    "jsrsasign": "^11.0.0",
     "lodash": "^4.17.19",
     "lynx": "^0.2.0",
     "minimatch": "^3.0.4",
