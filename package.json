@@ -37,7 +37,7 @@
   "devDependencies": {
     "chai": "^2.3.0",
     "config": "^3.3.9",
-    "eslint": "^6.1.0",
+    "eslint": "^8.56.0",
     "eslint-config-google": "^0.13.0",
     "js-yaml": "^3.4.2",
     "jshint-stylish": "^2.2.1",
