@@ -15,14 +15,14 @@
   "dependencies": {
     "async": "^2.6.4",
     "debug": "^3.1.0",
-    "dotenv": "^8.0.0",
+    "dotenv": "^16.4.7",
     "js2xmlparser": "^2.0.2",
     "jsrsasign": "^11.1.0",
     "lodash": "^4.17.19",
     "lynx": "^0.2.0",
     "minimatch": "^3.0.4",
     "portastic": "^1.0.1",
-    "postman-request": "^2.88.1-postman.33",
+    "postman-request": "^2.88.1-postman.42",
     "toobusy-js": "^0.5.1",
     "volos-analytics-apigee": "^0.5.0",
     "volos-cache-memory": "^0.10.0",
@@ -34,17 +34,17 @@
     "xml2js": "^0.5.0"
   },
   "devDependencies": {
-    "chai": "^2.3.0",
+    "chai": "^5.2.0",
     "config": "^3.3.9",
-    "eslint": "^8.56.0",
-    "eslint-config-google": "^0.13.0",
+    "eslint": "^9.22.0",
+    "eslint-config-google": "^0.14.0",
     "js-yaml": "^3.4.2",
     "jshint-stylish": "^2.2.1",
     "jsonwebtoken": "^9.0.1",
-    "mocha": "^11.0.1",
-    "nyc": "^15.1.0",
+    "mocha": "^11.1.0",
+    "nyc": "^17.1.0",
     "pem": "^1.7.2",
-    "supertest": "^6.3.3",
+    "supertest": "^7.0.0",
     "volos-analytics-memory": "^0.2.0"
   }
 }
