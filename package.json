@@ -38,7 +38,7 @@
     "config": "^3.3.9",
     "eslint": "^9.22.0",
     "eslint-config-google": "^0.14.0",
-    "js-yaml": "^3.4.2",
+    "js-yaml": "^4.1.1",
     "jshint-stylish": "^2.2.1",
     "jsonwebtoken": "^9.0.1",
     "mocha": "^11.1.0",
