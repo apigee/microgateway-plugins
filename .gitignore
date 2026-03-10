@@ -49,3 +49,5 @@ quick.sh
 summary.txt
 tools
 biglog.txt
+package-lock.json
+npm-shrinkwrap.json

@@ -162,7 +162,7 @@ module.exports.init = function (config , logger, stats) {
 			if (checkIsIPV4(sourceIP[0])) {
 				processActionFlow(sourceIP[0], res, req, next);
 			} else {
-				dns.lookup(sourceIP[0], (err, address, family) => {
+				dns.lookup(sourceIP[0], { family: 4 }, (err, address, family) => {
 				  debug('address: %j family: IPv%s', address, family);
 				  if (err) {
 				  	debug(err);
