@@ -41,6 +41,7 @@
     "mocha": "^11.7.5",
     "nyc": "^18.0.0",
     "pem": "^1.7.2",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "volos-analytics-memory": "^0.2.0"
   }
 }

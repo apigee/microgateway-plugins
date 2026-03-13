@@ -27,7 +27,7 @@ describe('apikey plugin', function () {
     beforeEach(() => {
         process.env.EDGEMICRO_LOCAL_PROXY = "0"
         process.env.EDGEMICRO_LOCAL = "0"
-        process.env.EDGEMICRO_OPENTRACE = false
+        delete process.env.EDGEMICRO_OPENTRACE
     });
 
     after((done) => {

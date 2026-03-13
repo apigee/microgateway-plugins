@@ -428,9 +428,10 @@ function sendError(req, res, next, logger, stats, code, message, upstreamResp) {
     //opentracing
     if (process.env.EDGEMICRO_OPENTRACE) {
         try {
-            const traceHelper = require('../microgateway-core/lib/trace-helper');
-            traceHelper.setChildErrorSpan('oauth', req.headers);        
-        } catch (err) {}
+            if (logger.traceHelper) {
+                logger.traceHelper.setChildErrorSpan('oauth', req.headers);
+            }
+        } catch (err) { }
     }
 
     if ( !res.finished ) {

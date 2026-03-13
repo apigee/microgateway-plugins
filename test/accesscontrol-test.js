@@ -5,6 +5,8 @@ const logger = coreObject.logger;
 const stats = coreObject.stats;
 
 
+const net = require('net');
+
 const testInputs = [
   {
     message: 'allows source IP by default with undefined config',
@@ -42,7 +44,7 @@ const testInputs = [
   },
   {
     message: 'finds and denies host IP from DNS lookup, with allow list',
-    config: { deny: ['127.0.0.*']},
+    config: { deny: ['127.0.0.*', '::1']},
     shouldAllow: false, sourceIP:'localhost'
   },
   {
@@ -119,6 +121,24 @@ const testInputs = [
     message: 'blocks source IP defined in both allow and deny lists, denu is defined first',
     config: { deny: ["10.11.*.*"], allow: ["10.11.*.*"] },
     shouldAllow: false, sourceIP:'10.11.22.44'
+  },
+  {
+    message: 'allows X-Forwarded-For IP',
+    headers: { 'x-forwarded-for': '192.168.1.1' },
+    config: { allow: ['192.168.1.*'] },
+    shouldAllow: true
+  },
+  {
+    message: 'handles IPv4-mapped IPv6 address',
+    remoteAddress: '::ffff:10.11.22.44',
+    config: { allow: ['10.11.22.44'] },
+    shouldAllow: true
+  },
+  {
+    message: 'supports exact IPv6 match',
+    remoteAddress: '2001:db8::1',
+    config: { allow: ['2001:db8::1'] },
+    shouldAllow: true
   }
 ]
 
@@ -154,10 +174,12 @@ describe('accesscontrol plugin', () => {
       }
 
       const req = {
-        headers: {
-          host: testInput.sourceIP
-        }
+        headers: testInput.headers || (testInput.sourceIP ? { host: testInput.sourceIP } : {}),
+        connection: (testInput.remoteAddress !== undefined || (testInput.sourceIP && net.isIP(testInput.sourceIP))) ? {
+           remoteAddress: testInput.remoteAddress || testInput.sourceIP
+        } : {}
       };
+      if (testInput.remoteAddress === null) delete req.connection.remoteAddress;
 
       const res = {
         setHeader: () => {},

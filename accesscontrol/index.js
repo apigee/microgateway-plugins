@@ -6,6 +6,7 @@
 var debug = require('debug')('plugin:accesscontrol');
 var util = require("util");
 const dns = require('dns');
+const net = require('net');
 
 module.exports.init = function (config , logger, stats) {
 
@@ -15,6 +16,20 @@ module.exports.init = function (config , logger, stats) {
 	const validAllowDenyOrder = Object.keys(config ||  {}).filter( key => Array.isArray(config[key]) && ( key === 'allow' || key === 'deny' ) );
 	const LOG_TAG_COMP = 'accesscontrol';
 
+	function getClientIP(req) {
+		let ip = (req.headers && req.headers['x-forwarded-for']) ||
+		         (req.connection && req.connection.remoteAddress) || 
+		         (req.socket && req.socket.remoteAddress);
+		
+		if (ip && ip.includes(',')) {
+			ip = ip.split(',')[0].trim();
+		}
+		
+		if (ip && ip.startsWith('::ffff:')) {
+			ip = ip.substring(7);
+		}
+		return ip;
+	}
 	/**
 	* If no rules match then check use noRuleMatchAction value.
 	*/ 
@@ -38,19 +53,6 @@ module.exports.init = function (config , logger, stats) {
 	  }
 	  return false;
 	}
-
-	/** 
-	* for each list in the allow and deny, make sure they are proper
-	* IPv4 addresses
-	*/
-	/*   never used
-	function validateIPList(list) {
-		list.forEach(function(entry){
-			if (!checkIsIPV4(entry)) return false;
-		});
-		return true;
-	}
-	*/
 
 	/** 
 	* Check if the sourceIP is present in allow or deny in config defined order.
@@ -79,13 +81,14 @@ module.exports.init = function (config , logger, stats) {
 
 	function scanIP(list, sourceIP) {
 		
-		var sourceOctets = sourceIP.split('.');	
 		//no wildcard
 		for (var i=0; i < list.length; i++) {
-			//no wildcard
-			if (list[i].indexOf('*') === -1 && list[i] === sourceIP) {
+			// exact match works for both IPv4 and IPv6
+			if (list[i] === sourceIP) {
 				return true;
-			} else if (list[i].indexOf('*') !==  -1) { //contains wildcard
+			} else if (list[i].indexOf('*') !==  -1 && !sourceIP.includes(':')) { 
+				// IPv4 wildcard comparison
+				var sourceOctets = sourceIP.split('.');
 				var listOctets = list[i].split('.');
 				if (octetCompare(listOctets, sourceOctets)) return true;			
 			}
@@ -102,9 +105,9 @@ module.exports.init = function (config , logger, stats) {
 		var compare = false;
 		for (var i=0; i < listOctets.length; i++) {
 			//debug('list ' + listOctets[i] + ' sourceOctets ' + sourceOctets[i]);
-			if (listOctets[i] !==  '*' && parseInt(listOctets[i]) === parseInt(sourceOctets[i])) {
+			if (sourceOctets[i] && listOctets[i] !==  '*' && parseInt(listOctets[i]) === parseInt(sourceOctets[i])) {
 				compare = true;
-			} else if (listOctets[i] !==  '*' && parseInt(listOctets[i]) !==  parseInt(sourceOctets[i])) {
+			} else if (listOctets[i] !==  '*' && ( !sourceOctets[i] || parseInt(listOctets[i]) !==  parseInt(sourceOctets[i]))) {
 				return false;
 			} 
 		}
@@ -155,14 +158,23 @@ module.exports.init = function (config , logger, stats) {
 			if(!config || (!config.allow && !config.deny) ){
 				return applyNoRuleMatch(res, req, next);
 			}
-			if ( !req.headers.host ) {
+
+			let sourceIP = getClientIP(req);
+
+			if (!sourceIP && req.headers && req.headers.host) {
+				// Legacy fallback to Host header
+				sourceIP = req.headers.host.split(":")[0];
+				debug('falling back to Host header for IP: ' + sourceIP);
+			}
+
+			if ( !sourceIP ) {
 				return sendError(res, req, new Error('request headers does not contain host'), next);
 			}
-			let sourceIP = req.headers.host.split(":");
-			if (checkIsIPV4(sourceIP[0])) {
-				processActionFlow(sourceIP[0], res, req, next);
+
+			if (net.isIP(sourceIP)) {
+				processActionFlow(sourceIP, res, req, next);
 			} else {
-				dns.lookup(sourceIP[0], { family: 4 }, (err, address, family) => {
+				dns.lookup(sourceIP, (err, address, family) => {
 				  debug('address: %j family: IPv%s', address, family);
 				  if (err) {
 				  	debug(err);
